@@ -72,11 +72,11 @@ int main()
     std::vector<std::unique_ptr<vulc::Texture>> textures{};
     textures.reserve(NUM_TEXTURES);
     for(auto i{0}; i < NUM_TEXTURES; ++i)
-        textures.push_back(
-            std::make_unique<vulc::Texture>(
-                *device, *commandPool, fmt::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i)
-            )
-        );
+    {
+        auto pTexture{ std::make_unique<vulc::Texture>() };
+        pTexture->fromFile(device.get(), *commandPool, fmt::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
+        textures.push_back(std::move(pTexture));
+    }
 
     vulc::Renderer renderer{*device, *window, *swapchain, *pipeline, std::move(textures), *commandPool};
 
