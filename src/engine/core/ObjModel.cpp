@@ -1,4 +1,4 @@
-#include "Mesh.hpp"
+#include "ObjModel.hpp"
 
 #include "core/Device.hpp"
 #include "utility/Common.hpp"
@@ -21,7 +21,7 @@
 namespace vulc
 {
 
-Mesh::Mesh(const Device& device, const std::filesystem::path& filepath) : m_device{device}
+ObjModel::ObjModel(const Device& device, const std::filesystem::path& filepath) : m_device{device}
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -78,7 +78,7 @@ Mesh::Mesh(const Device& device, const std::filesystem::path& filepath) : m_devi
     );
 }
 
-Mesh::~Mesh()
+ObjModel::~ObjModel()
 {
     vmaDestroyBuffer(m_device.allocator(), m_buffer, m_allocation);
 }

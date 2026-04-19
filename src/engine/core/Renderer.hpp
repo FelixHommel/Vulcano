@@ -4,7 +4,7 @@
 #include "core/CommandPool.hpp"
 #include "core/Device.hpp"
 #include "core/FrameResources.hpp"
-#include "core/Mesh.hpp"
+#include "core/ObjModel.hpp"
 #include "core/Pipeline.hpp"
 #include "core/Swapchain.hpp"
 #include "core/Texture.hpp"
@@ -42,7 +42,7 @@ public:
     Renderer(Renderer&&) = delete;
     Renderer& operator=(Renderer&&) = delete;
 
-    void draw(const Mesh& mesh, const ShaderData& shaderData);
+    void draw(const ObjModel& mesh, const ShaderData& shaderData);
     void requestSwapchainRecreate() noexcept { m_recreateSwapchain = true; }
 
 private:
@@ -70,7 +70,7 @@ private:
 
     void syncSwapchainImages();
     void updateShaderdataBuffers(const ShaderData& shaderData);
-    void recordCommandBuffers(const Mesh& mesh);
+    void recordCommandBuffers(const ObjModel& mesh);
     void submitToGraphicsQueue();
     void presentImage();
 

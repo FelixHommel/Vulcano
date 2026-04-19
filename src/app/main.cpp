@@ -1,7 +1,7 @@
 #include "core/CommandPool.hpp"
 #include "core/Device.hpp"
 #include "core/FrameResources.hpp"
-#include "core/Mesh.hpp"
+#include "core/ObjModel.hpp"
 #include "core/Pipeline.hpp"
 #include "core/Renderer.hpp"
 #include "core/Shader.hpp"
@@ -67,7 +67,7 @@ int main()
     auto commandPool{std::make_unique<vulc::CommandPool>(*device)};
 
     // NOTE: Step 4 - Load Resources
-    auto mesh{std::make_unique<vulc::Mesh>(*device, PROJ_ROOT "resources/models/suzanne.obj")};
+    auto mesh{std::make_unique<vulc::ObjModel>(*device, PROJ_ROOT "resources/models/suzanne.obj")};
 
     std::vector<std::unique_ptr<vulc::Texture>> textures{};
     textures.reserve(NUM_TEXTURES);

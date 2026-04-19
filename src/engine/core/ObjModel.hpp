@@ -13,16 +13,16 @@
 namespace vulc
 {
 
-class Mesh
+class ObjModel
 {
 public:
-    Mesh(const Device& device, const std::filesystem::path& filepath);
-    ~Mesh();
+    ObjModel(const Device& device, const std::filesystem::path& filepath);
+    ~ObjModel();
 
-    Mesh(const Mesh&) = delete;
-    Mesh& operator=(const Mesh&) = delete;
-    Mesh(Mesh&&) = delete;
-    Mesh& operator=(Mesh&&) = delete;
+    ObjModel(const ObjModel&) = delete;
+    ObjModel& operator=(const ObjModel&) = delete;
+    ObjModel(ObjModel&&) = delete;
+    ObjModel& operator=(ObjModel&&) = delete;
 
     [[nodiscard]] VkDeviceSize indexCount() const noexcept { return m_indexCount; }
     [[nodiscard]] VkDeviceSize vertexBufferSize() const noexcept { return m_vertexBufferSize; }

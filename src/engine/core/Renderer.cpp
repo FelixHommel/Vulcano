@@ -3,7 +3,7 @@
 #include "core/CommandPool.hpp"
 #include "core/Device.hpp"
 #include "core/FrameResources.hpp"
-#include "core/Mesh.hpp"
+#include "core/ObjModel.hpp"
 #include "core/Pipeline.hpp"
 #include "core/Swapchain.hpp"
 #include "core/Texture.hpp"
@@ -55,7 +55,7 @@ Renderer::~Renderer()
     vkDestroyDescriptorPool(m_device.handle(), m_descriptorPool, nullptr);
 }
 
-void Renderer::draw(const Mesh& mesh, const ShaderData& shaderData)
+void Renderer::draw(const ObjModel& mesh, const ShaderData& shaderData)
 {
     syncSwapchainImages();
     if(m_recreateSwapchain)
@@ -163,7 +163,7 @@ void Renderer::updateShaderdataBuffers(const ShaderData& shaderData)
     );
 }
 
-void Renderer::recordCommandBuffers(const Mesh& mesh)
+void Renderer::recordCommandBuffers(const ObjModel& mesh)
 {
     auto& frameResources{m_frameResources.at(m_frameIndex)};
     auto& commandBuffer{frameResources->commandBuffer};
