@@ -5,6 +5,7 @@ add_library(${NAME}
     ./core/CommandPool.cpp
     ./core/Device.cpp
     ./core/FrameResources.cpp
+    ./core/GLTFModel.cpp
     ./core/ObjModel.cpp
     ./core/Pipeline.cpp
     ./core/Renderer.cpp
@@ -24,6 +25,7 @@ target_sources(${NAME}
             ./core/CommandPool.hpp
             ./core/Device.hpp
             ./core/FrameResources.hpp
+            ./core/GLTFModel.hpp
             ./core/ObjModel.hpp
             ./core/Pipeline.hpp
             ./core/Renderer.hpp
