@@ -19,6 +19,7 @@
     "spdlog",
     "tinyobjloader",
     "volk",
-    "vulkan-memory-allocator"
+    "vulkan-memory-allocator",
+    "tinygltf"
   ]
 }

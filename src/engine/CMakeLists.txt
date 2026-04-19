@@ -64,4 +64,10 @@ target_link_libraries(${NAME}
         volk::volk_headers
         Vulkan::Vulkan
 )
-target_include_directories(${NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_include_directories(${NAME}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE
+        ${TINYGLTF_INCLUDE_DIRS}
+)

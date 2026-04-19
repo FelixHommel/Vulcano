@@ -8,3 +8,5 @@ find_package(glm CONFIG REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
 find_package(Ktx CONFIG REQUIRED)
 find_package(slang CONFIG REQUIRED)
+
+find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
