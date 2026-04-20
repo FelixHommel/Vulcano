@@ -35,7 +35,6 @@ public:
     Device& operator=(Device&&) = delete;
 
     [[nodiscard]] VkDevice handle() const noexcept { return m_device; }
-    [[nodiscard]] VkDevice handle() noexcept { return m_device; }
 
     [[nodiscard]] VkInstance instance() const noexcept { return m_instance; }
     [[nodiscard]] VkPhysicalDevice physicalDevice() const noexcept { return m_physicalDevice; }
