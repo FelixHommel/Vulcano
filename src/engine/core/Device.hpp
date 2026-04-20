@@ -1,6 +1,7 @@
 #ifndef VULCANO_SRC_ENGINE_CORE_DEVICE_HPP
 #define VULCANO_SRC_ENGINE_CORE_DEVICE_HPP
 
+#include <limits>
 #include <volk.h>
 
 #include <vk_mem_alloc.h>
@@ -15,8 +16,11 @@ namespace vulc
 
 struct Queue
 {
+    static constexpr auto INVALID_QUEUE_INDEX{std::numeric_limits<std::uint32_t>::max()};
+
     VkQueue queue{VK_NULL_HANDLE};
-    std::uint32_t queueFamilyIndex{0};
+    // NOTE: Use very high number to initialize index with since 0 is a valid queue index
+    std::uint32_t queueFamilyIndex{INVALID_QUEUE_INDEX};
 };
 
 class Device
