@@ -27,9 +27,10 @@ struct fmt::formatter<VkResult> : formatter<std::string_view>
 template<>
 struct fmt::formatter<ktxResult> : formatter<std::string_view>
 {
-    constexpr format_context::iterator format(ktxResult result, format_context& ctx) const
+    constexpr format_context::iterator format([[maybe_unused]] ktxResult result, format_context& ctx) const
     {
-        return formatter<string_view>::format(to_string(result), ctx);
+        // TODO: Implement different way to convert ktxResult to string (reflection soon?!?!?)
+        return formatter<string_view>::format("ktx error", ctx);
     }
 };
 
