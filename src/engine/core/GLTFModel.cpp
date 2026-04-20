@@ -57,7 +57,7 @@ void GLTFModel::loadImages(tinygltf::Model& input)
             bufferSize = static_cast<VkDeviceSize>(glTFImage.image.size());
         }
 
-        m_images[i].
+        // m_images[i].
     }
 }
 
