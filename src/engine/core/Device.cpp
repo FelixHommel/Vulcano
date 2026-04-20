@@ -123,8 +123,8 @@ void Device::createInstance()
             | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         debugMessengerCI.pfnUserCallback = ::debugMessageCallback;
 
-        instanceCI.enabledLayerCount = static_cast<std::uint32_t>(VALIDATION_LAYERS.size());
-        instanceCI.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+        instanceCI.enabledLayerCount = static_cast<std::uint32_t>(DEVICE_LAYERS.size());
+        instanceCI.ppEnabledLayerNames = DEVICE_LAYERS.data();
         instanceCI.pNext = &debugMessengerCI;
     }
 

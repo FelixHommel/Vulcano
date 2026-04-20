@@ -55,7 +55,7 @@ private:
     static constexpr auto QUEUE_FAMILY_PRIOS{1.f};
 
     const std::vector<const char*> DEVICE_EXTENSIONS{VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_dynamic_rendering"};
-    const std::vector<const char*> VALIDATION_LAYERS{"VK_LAYER_KHRONOS_validation"};
+    const std::vector<const char*> DEVICE_LAYERS{"VK_LAYER_KHRONOS_validation"};
 
     VkInstance m_instance{VK_NULL_HANDLE};
     VkDebugUtilsMessengerEXT m_debugMessenger{VK_NULL_HANDLE};
