@@ -237,14 +237,14 @@ void Device::findQueueFamilies()
             m_transferQueue.queueFamilyIndex = i;
         }
 
-        if(m_graphicsQueue.queueFamilyIndex != Queue::INVALID_QUEUE_INDEX && m_transferQueue.queueFamilyIndex != Queue::INVALID_QUEUE_INDEX)
+        if(m_graphicsQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX && m_transferQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX)
         {
             spdlog::info("Found queues for graphics and transfer. Graphics index: {} | Transfer index: {}", m_graphicsQueue.queueFamilyIndex, m_transferQueue.queueFamilyIndex);
             break;
         }
     }
 
-    if(m_transferQueue.queueFamilyIndex == Queue::INVALID_QUEUE_INDEX)
+    if(m_transferQueue.queueFamilyIndex == ::INVALID_QUEUE_INDEX)
     {
         spdlog::info("Could not find a dedicated transfer queue, using same as graphics.");
         m_transferQueue.queueFamilyIndex = m_graphicsQueue.queueFamilyIndex;

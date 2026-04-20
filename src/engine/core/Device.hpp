@@ -11,16 +11,21 @@
 
 #include <cstdint>
 
+namespace
+{
+
+constexpr auto INVALID_QUEUE_INDEX{std::numeric_limits<std::uint32_t>::max()};
+
+} // namespace
+
 namespace vulc
 {
 
 struct Queue
 {
-    static constexpr auto INVALID_QUEUE_INDEX{std::numeric_limits<std::uint32_t>::max()};
-
     VkQueue queue{VK_NULL_HANDLE};
     // NOTE: Use very high number to initialize index with since 0 is a valid queue index
-    std::uint32_t queueFamilyIndex{INVALID_QUEUE_INDEX};
+    std::uint32_t queueFamilyIndex{::INVALID_QUEUE_INDEX};
 };
 
 class Device
