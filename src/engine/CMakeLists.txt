@@ -73,3 +73,10 @@ target_include_directories(${NAME}
     PRIVATE
         ${TINYGLTF_INCLUDE_DIRS}
 )
+
+target_compile_definitions(${NAME}
+    PUBLIC
+        # Commonly needed GLM configuration to work smoothly with Vulkan. Must be PUBLIC because targets need them to be defined as well
+        GLM_FORCE_RADIANS
+        GLM_FORCE_DEPTH_ZERO_TO_ONE
+)

@@ -5,8 +5,6 @@
 #include "core/Device.hpp"
 #include "utility/Globals.hpp"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 
 #include <volk.h>
