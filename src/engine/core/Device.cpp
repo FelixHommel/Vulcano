@@ -228,14 +228,13 @@ void Device::findQueueFamilies()
 
     for(std::size_t i{0}; i < queueFamilies.size(); ++i)
     {
+        // NOTE: Not the best queue selection heuristic (the first queue that fits the flag is chosen) but it works for now
+
         if((queueFamilies.at(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0u)
-        {
             m_graphicsQueue.queueFamilyIndex = i;
-        }
-        else if((queueFamilies.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) != 0u)
-        {
+
+        if((queueFamilies.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) != 0u)
             m_transferQueue.queueFamilyIndex = i;
-        }
 
         if(m_graphicsQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX && m_transferQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX)
         {
