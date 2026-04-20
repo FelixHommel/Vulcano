@@ -62,10 +62,12 @@ Device::Device()
     findQueueFamilies();
     createDevice();
     createAllocator();
+    createCommandPool();
 }
 
 Device::~Device()
 {
+    vkDestroyCommandPool(m_device, m_internalCommandPool, nullptr);
     vmaDestroyAllocator(m_allocator);
 
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -77,6 +79,58 @@ Device::~Device()
         vkDestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
 
     vkDestroyInstance(m_instance, nullptr);
+}
+
+VkCommandBuffer Device::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+{
+    VkCommandBuffer cmdBuffer{VK_NULL_HANDLE};
+
+    const VkCommandBufferAllocateInfo commandBufferAI{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = m_internalCommandPool,
+        .level = level,
+        .commandBufferCount = 1
+    };
+    chk(vkAllocateCommandBuffers(m_device, &commandBufferAI, &cmdBuffer));
+
+    if(begin)
+    {
+        const VkCommandBufferBeginInfo cbBeginInfo{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+        };
+        chk(vkBeginCommandBuffer(cmdBuffer, &cbBeginInfo));
+    }
+
+    return cmdBuffer;
+}
+
+void Device::submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free)
+{
+    if(cmdBuffer == VK_NULL_HANDLE)
+        return;
+
+    chk(vkEndCommandBuffer(cmdBuffer));
+
+    const VkSubmitInfo submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &cmdBuffer
+    };
+
+    VkFence submitFence{VK_NULL_HANDLE};
+    const VkFenceCreateInfo fenceCI{
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
+    chk(vkCreateFence(m_device, &fenceCI, nullptr, &submitFence));
+
+    chk(vkQueueSubmit(m_transferQueue.queue, 1, &submitInfo, submitFence));
+    chk(vkWaitForFences(m_device, 1, &submitFence, VK_TRUE, UINT64_MAX));
+
+    vkDestroyFence(m_device, submitFence, nullptr);
+
+    if(free)
+        vkFreeCommandBuffers(m_device, m_internalCommandPool, 1, &cmdBuffer);
 }
 
 void Device::prepareSDL()
@@ -258,6 +312,16 @@ void Device::createAllocator()
         .vulkanApiVersion = VULKAN_API_VERSION
     };
     chk(vmaCreateAllocator(&allocatorCI, &m_allocator));
+}
+
+void Device::createCommandPool()
+{
+    const VkCommandPoolCreateInfo commandPoolCI{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = m_transferQueue.queueFamilyIndex
+    };
+    chk(vkCreateCommandPool(m_device, &commandPoolCI, nullptr, &m_internalCommandPool));
 }
 
 } // namespace vulc

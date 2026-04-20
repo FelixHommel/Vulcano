@@ -43,6 +43,9 @@ public:
 
     [[nodiscard]] const Queue& graphicsQueue() const noexcept { return m_graphicsQueue; }
 
+    [[nodiscard]] VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, bool begin = true);
+    void submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free = true);
+
 private:
     static constexpr auto VULKAN_API_VERSION{VK_API_VERSION_1_3};
     static constexpr auto ENABLE_VALIDATION_LAYERS{
@@ -64,6 +67,7 @@ private:
     Queue m_graphicsQueue;
     Queue m_transferQueue;
     VmaAllocator m_allocator{VK_NULL_HANDLE};
+    VkCommandPool m_internalCommandPool{VK_NULL_HANDLE};
 
     static void prepareSDL();
     void createInstance();
@@ -72,6 +76,7 @@ private:
     void findQueueFamilies();
     void createDevice();
     void createAllocator();
+    void createCommandPool();
 };
 
 } // namespace vulc
