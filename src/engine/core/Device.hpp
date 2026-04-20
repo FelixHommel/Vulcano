@@ -46,7 +46,7 @@ public:
 private:
     static constexpr auto VULKAN_API_VERSION{VK_API_VERSION_1_3};
     static constexpr auto ENABLE_VALIDATION_LAYERS{
-#if defined(PROJ_DEBUG)
+#if VULCANO_DEBUG
         true
 #else
         false
