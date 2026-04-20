@@ -135,8 +135,8 @@ void Device::submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free)
 
 void Device::prepareSDL()
 {
-    chkSDL(SDL_Init(SDL_INIT_VIDEO));
-    chkSDL(SDL_Vulkan_LoadLibrary(nullptr));
+    chk(SDLResult{SDL_Init(SDL_INIT_VIDEO)});
+    chk(SDLResult{SDL_Vulkan_LoadLibrary(nullptr)});
 }
 
 void Device::createInstance()
@@ -249,7 +249,7 @@ void Device::findQueueFamilies()
         m_transferQueue.queueFamilyIndex = m_graphicsQueue.queueFamilyIndex;
     }
 
-    chkSDL(SDL_Vulkan_GetPresentationSupport(m_instance, m_physicalDevice, m_graphicsQueue.queueFamilyIndex));
+    chk(SDLResult{SDL_Vulkan_GetPresentationSupport(m_instance, m_physicalDevice, m_graphicsQueue.queueFamilyIndex)});
 }
 
 void Device::createDevice()

@@ -141,7 +141,7 @@ void Renderer::syncSwapchainImages()
     chk(vkWaitForFences(m_device.handle(), 1, &frameResources->fence, VK_TRUE, UINT64_MAX));
     chk(vkResetFences(m_device.handle(), 1, &frameResources->fence));
 
-    chkSwapchain(
+    chk(
         vkAcquireNextImageKHR(
             m_device.handle(),
             m_swapchain.handle(),
@@ -313,7 +313,7 @@ void Renderer::presentImage()
         .pSwapchains = &swapchain,
         .pImageIndices = &m_imageIndex
     };
-    chkSwapchain(vkQueuePresentKHR(m_device.graphicsQueue().queue, &presentInfo), m_recreateSwapchain);
+    chk(vkQueuePresentKHR(m_device.graphicsQueue().queue, &presentInfo), m_recreateSwapchain);
 }
 
 void Renderer::recreateSwapchain()

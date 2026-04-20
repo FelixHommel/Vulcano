@@ -49,11 +49,11 @@ void Swapchain::recreate(Window& window)
 void Swapchain::createSurface(Window& window, bool recreate)
 {
     if(!recreate)
-        chkSDL(SDL_Vulkan_CreateSurface(window.handle(), m_device.instance(), nullptr, &m_surface));
+        chk(SDLResult{SDL_Vulkan_CreateSurface(window.handle(), m_device.instance(), nullptr, &m_surface)});
 
     int windowWidth{0};
     int windowHeight{0};
-    chkSDL(SDL_GetWindowSize(window.handle(), &windowWidth, &windowHeight));
+    chk(SDLResult{SDL_GetWindowSize(window.handle(), &windowWidth, &windowHeight)});
 
     chk(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_device.physicalDevice(), m_surface, &m_surfaceCapabilities));
 

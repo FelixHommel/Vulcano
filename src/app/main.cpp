@@ -15,7 +15,6 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <SDL3/SDL.h>
-#include <fmt/format.h>
 
 #include <array>
 #include <cassert>
@@ -24,6 +23,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <format>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -72,7 +72,7 @@ int main()
     for(auto i{0}; i < NUM_TEXTURES; ++i)
     {
         auto pTexture{ std::make_unique<vulc::Texture>() };
-        pTexture->fromFile(device.get(), *commandPool, fmt::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
+        pTexture->fromFile(device.get(), *commandPool, std::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
         textures.push_back(std::move(pTexture));
     }
 

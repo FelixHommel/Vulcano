@@ -2,37 +2,93 @@
 #define VULCANO_SRC_ENGINE_UTILITY_COMMON_HPP
 
 #include <SDL3/SDL_error.h>
-#include <fmt/base.h>
-#include <fmt/format.h>
 #include <ktx.h>
 #include <spdlog/spdlog.h>
+#include <utility>
 #include <volk.h>
 #include <vulkan/vulkan_core.h>
 
 #include <cstdio>
 #include <cstdlib>
+#include <format>
 #include <source_location>
 #include <string_view>
 
-// NOTE: Custom formatter to easily print VkResult enum members
-template<>
-struct fmt::formatter<VkResult> : formatter<std::string_view>
+// NOTE: Custom formatters. They all could use some C++26 reflection (will be available soon, right?!?!!)
+namespace std
 {
-    constexpr format_context::iterator format(VkResult result, format_context& ctx) const
+
+template<>
+struct formatter<VkResult> : formatter<int>
+{
+    auto format(VkResult result, format_context& ctx) const
     {
-        return formatter<string_view>::format(to_string(result), ctx);
+        return formatter<int>::format(to_underlying(result), ctx);
     }
 };
 
 template<>
-struct fmt::formatter<ktxResult> : formatter<std::string_view>
+struct formatter<ktxResult> : formatter<unsigned int>
 {
-    constexpr format_context::iterator format([[maybe_unused]] ktxResult result, format_context& ctx) const
+    auto format(ktxResult result, format_context& ctx) const
     {
-        // TODO: Implement different way to convert ktxResult to string (reflection soon?!?!?)
-        return formatter<string_view>::format("ktx error", ctx);
+        return formatter<unsigned int>::format(to_underlying(result), ctx);
     }
 };
+
+} // namespace std
+
+
+// NOTE: Declare the SDLResult struct before defining the traits
+namespace vulc
+{
+
+struct SDLResult
+{
+    bool value;
+};
+
+}
+
+namespace
+{
+
+template<typename T>
+struct chkTraits;
+
+template<>
+struct chkTraits<VkResult>
+{
+    static bool failed(VkResult result) {return result != VK_SUCCESS;}
+    static std::string message(VkResult result) {return std::format("Vulkan call returned an error ({})", result);}
+    static int exitCode(VkResult result) {return static_cast<int>(result);}
+};
+
+template<>
+struct chkTraits<bool>
+{
+    static bool failed(bool result) {return !result;}
+    static std::string message([[maybe_unused]] bool result) {return "Call returned an error";}
+    static int exitCode([[maybe_unused]] bool result) {return 1;}
+};
+
+template<>
+struct chkTraits<ktxResult>
+{
+    static bool failed(ktxResult result) {return result != KTX_SUCCESS;}
+    static std::string message(ktxResult result) {return std::format("KTX call returned an error ({})", result);}
+    static int exitCode(ktxResult result) {return static_cast<int>(result);}
+};
+
+template<>
+struct chkTraits<vulc::SDLResult>
+{
+    static bool failed(vulc::SDLResult result) {return !result.value;}
+    static std::string message([[maybe_unused]] vulc::SDLResult result) {return std::format("SDL call returned an error with the following message: {}", SDL_GetError());}
+    static int exitCode([[maybe_unused]] vulc::SDLResult result) {return 1;}
+};
+
+} // namespace
 
 #if !defined(VULCANO_DEBUG)
 #    define VULCANO_DEBUG 0
@@ -41,22 +97,23 @@ struct fmt::formatter<ktxResult> : formatter<std::string_view>
 namespace vulc
 {
 
-inline void chk(VkResult result, std::string_view msg = {})
+template<typename T>
+inline void chk(T result, std::string_view msg = {})
 {
 #if VULCANO_DEBUG
-    if(result != VK_SUCCESS)
+    if(::chkTraits<T>::failed(result))
     {
         if(msg.empty())
-            spdlog::critical("Vulkan call returned an error ({})", result);
+            spdlog::critical("{}", ::chkTraits<T>::message(result));
         else
-            spdlog::critical("Vulkan call returned an error ({}): {}", result, msg);
+            spdlog::critical("{}: {}", ::chkTraits<T>::message(result), msg);
 
-        std::exit(result);
+        std::exit(::chkTraits<T>::exitCode(result));
     }
 #endif
 }
 
-inline void chkSwapchain(VkResult result, bool& swapchainUpdateFlag, std::string_view msg = {})
+inline void chk(VkResult result, bool& swapchainUpdateFlag, std::string_view msg = {})
 {
 #if VULCANO_DEBUG
     if(result < VK_SUCCESS)
@@ -68,48 +125,16 @@ inline void chkSwapchain(VkResult result, bool& swapchainUpdateFlag, std::string
         }
 
         if(msg.empty())
-            spdlog::critical("Vulkan call returned an error ({})", result);
+            spdlog::critical("{}", ::chkTraits<VkResult>::message(result));
         else
-            spdlog::critical("Vulkan call returned an error ({}): {}", result, msg);
+            spdlog::critical("{}: {}", ::chkTraits<VkResult>::message(result), msg);
 
-        std::exit(result);
+        std::exit(::chkTraits<VkResult>::exitCode(result));
     }
 #endif
 }
 
-inline void chk(bool result, std::string_view msg = {})
-{
-#if VULCANO_DEBUG
-    if(!result)
-    {
-        if(msg.empty())
-            spdlog::critical("Call returned an error");
-        else
-            spdlog::critical("Call returned an error: {}", msg);
-
-        std::exit(1);
-    }
-#endif
-}
-
-inline void chkSDL(bool result, std::string_view msg = {})
-{
-#if VULCANO_DEBUG
-    if(!result)
-    {
-        if(msg.empty())
-            spdlog::critical("Call returned an error: {}", SDL_GetError());
-        else
-            spdlog::critical("Call returned an error: {}\n{}", msg, SDL_GetError());
-
-        std::exit(1);
-    }
-#endif
-}
-
-}; // namespace vulc
-
-namespace vulc::assertion
+namespace assertion
 {
 
 /// \brief Assertion failure handler.
@@ -157,7 +182,10 @@ constexpr const char* msgOrNull(const char* pMsg) noexcept
     return pMsg;
 }
 
-} // namespace vulc::assertion
+} // namespace assertion
+
+}; // namespace vulc
+
 
 #if !defined(VULCANO_ENABLE_ASSERTIONS)
 #    define VULCANO_ENABLE_ASSERTIONS 0
