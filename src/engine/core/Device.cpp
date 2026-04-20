@@ -59,7 +59,7 @@ Device::Device()
     createInstance();
     createDebugMessenger();
     pickPhysicalDevice();
-    findGraphicsQueue();
+    findQueueFamilies();
     createDevice();
     createAllocator();
 }
@@ -165,7 +165,7 @@ void Device::pickPhysicalDevice()
     spdlog::info("Selected device: {}", deviceProperties.properties.deviceName);
 }
 
-void Device::findGraphicsQueue()
+void Device::findQueueFamilies()
 {
     std::uint32_t queueFamilyCount{0};
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
@@ -177,8 +177,23 @@ void Device::findGraphicsQueue()
         if((queueFamilies.at(i).queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0u)
         {
             m_graphicsQueue.queueFamilyIndex = i;
+        }
+        else if((queueFamilies.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) != 0u)
+        {
+            m_transferQueue.queueFamilyIndex = i;
+        }
+
+        if(m_graphicsQueue.queueFamilyIndex != Queue::INVALID_QUEUE_INDEX && m_transferQueue.queueFamilyIndex != Queue::INVALID_QUEUE_INDEX)
+        {
+            spdlog::info("Found queues for graphics and transfer. Graphics index: {} | Transfer index: {}", m_graphicsQueue.queueFamilyIndex, m_transferQueue.queueFamilyIndex);
             break;
         }
+    }
+
+    if(m_transferQueue.queueFamilyIndex == Queue::INVALID_QUEUE_INDEX)
+    {
+        spdlog::info("Could not find a dedicated transfer queue, using same as graphics.");
+        m_transferQueue.queueFamilyIndex = m_graphicsQueue.queueFamilyIndex;
     }
 
     chkSDL(SDL_Vulkan_GetPresentationSupport(m_instance, m_physicalDevice, m_graphicsQueue.queueFamilyIndex));
@@ -223,7 +238,9 @@ void Device::createDevice()
     chk(vkCreateDevice(m_physicalDevice, &deviceCI, nullptr, &m_device));
 
     volkLoadDevice(m_device);
+
     vkGetDeviceQueue(m_device, m_graphicsQueue.queueFamilyIndex, 0, &m_graphicsQueue.queue);
+    vkGetDeviceQueue(m_device, m_transferQueue.queueFamilyIndex, 0, &m_transferQueue.queue);
 }
 
 void Device::createAllocator()

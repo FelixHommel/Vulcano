@@ -62,13 +62,14 @@ private:
     VkPhysicalDevice m_physicalDevice{VK_NULL_HANDLE};
     VkDevice m_device{VK_NULL_HANDLE};
     Queue m_graphicsQueue;
+    Queue m_transferQueue;
     VmaAllocator m_allocator{VK_NULL_HANDLE};
 
     static void prepareSDL();
     void createInstance();
     void createDebugMessenger();
     void pickPhysicalDevice();
-    void findGraphicsQueue();
+    void findQueueFamilies();
     void createDevice();
     void createAllocator();
 };
