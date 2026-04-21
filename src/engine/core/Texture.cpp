@@ -31,7 +31,7 @@ Texture::~Texture()
     vmaDestroyImage(m_device->allocator(), m_image, m_allocation);
 }
 
-void Texture::fromFile(Device* device, const CommandPool& commandPool, const std::filesystem::path& filepath)
+void Texture::fromFile(Device* device, const std::filesystem::path& filepath)
 {
     // NOTE: Step 1 - init internal Texture state
     VULCANO_ASSERT(device != nullptr, "Device needs to be a valid pointer to a vulc::Device");
@@ -102,21 +102,9 @@ void Texture::fromFile(Device* device, const CommandPool& commandPool, const std
     const VmaAllocationCreateInfo texImageAllocCI{.usage = VMA_MEMORY_USAGE_AUTO};
     chk(vmaCreateImage(m_device->allocator(), &texImgCI, &texImageAllocCI, &m_image, &m_allocation, nullptr));
 
-    VkCommandBuffer oneTimeCB{VK_NULL_HANDLE};
-    const VkCommandBufferAllocateInfo oneTimeCBAI{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = commandPool.handle(),
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = 1
-    };
-    chk(vkAllocateCommandBuffers(m_device->handle(), &oneTimeCBAI, &oneTimeCB));
-
-    const VkCommandBufferBeginInfo oneTimeCBBI{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-    };
-    chk(vkBeginCommandBuffer(oneTimeCB, &oneTimeCBBI));
-
     // NOTE: Step 5 - record image transition command buffer
+    VkCommandBuffer oneTimeCmdBuffer{m_device->createCommandBuffer()};
+
     const VkImageMemoryBarrier2 barrierTexImage{
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
         .srcStageMask = VK_PIPELINE_STAGE_2_NONE,
@@ -133,10 +121,10 @@ void Texture::fromFile(Device* device, const CommandPool& commandPool, const std
         .imageMemoryBarrierCount = 1,
         .pImageMemoryBarriers = &barrierTexImage
     };
-    vkCmdPipelineBarrier2(oneTimeCB, &barrierTexInfo);
+    vkCmdPipelineBarrier2(oneTimeCmdBuffer, &barrierTexInfo);
 
     vkCmdCopyBufferToImage(
-        oneTimeCB,
+        oneTimeCmdBuffer,
         imgStagingBuffer,
         m_image,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -156,24 +144,12 @@ void Texture::fromFile(Device* device, const CommandPool& commandPool, const std
         .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .baseMipLevel = 0, .levelCount = texture->numLevels, .layerCount = 1}
     };
     barrierTexInfo.pImageMemoryBarriers = &barrierTexRead;
-    vkCmdPipelineBarrier2(oneTimeCB, &barrierTexInfo);
+    vkCmdPipelineBarrier2(oneTimeCmdBuffer, &barrierTexInfo);
 
     // NOTE: Step 6 - finish command buffer recording and submit to queue
-    chk(vkEndCommandBuffer(oneTimeCB));
+    m_device->submitCommandBuffer(oneTimeCmdBuffer);
 
-    const VkFenceCreateInfo oneTimeFenceCI{.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-    VkFence oneTimeFence{VK_NULL_HANDLE};
-    chk(vkCreateFence(m_device->handle(), &oneTimeFenceCI, nullptr, &oneTimeFence));
-
-    const VkSubmitInfo oneTimeSI{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO, .commandBufferCount = 1, .pCommandBuffers = &oneTimeCB
-    };
-    chk(vkQueueSubmit(m_device->graphicsQueue().queue, 1, &oneTimeSI, oneTimeFence));
-    chk(vkWaitForFences(m_device->handle(), 1, &oneTimeFence, VK_TRUE, UINT64_MAX));
-
-    vkDestroyFence(m_device->handle(), oneTimeFence, nullptr);
     vmaDestroyBuffer(m_device->allocator(), imgStagingBuffer, imgStagingAllocation);
-    vkFreeCommandBuffers(m_device->handle(), commandPool.handle(), 1, &oneTimeCB);
 
     // NOTE: Step 7 - create texture utility
     const VkSamplerCreateInfo samplerCI{

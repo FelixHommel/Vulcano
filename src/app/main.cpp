@@ -72,7 +72,7 @@ int main()
     for(auto i{0}; i < NUM_TEXTURES; ++i)
     {
         auto pTexture{ std::make_unique<vulc::Texture>() };
-        pTexture->fromFile(device.get(), *commandPool, std::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
+        pTexture->fromFile(device.get(), std::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
         textures.push_back(std::move(pTexture));
     }
 

@@ -35,7 +35,7 @@ public:
         return {.sampler = m_sampler, .imageView = m_view, .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     }
 
-    void fromFile(Device* device, const CommandPool& commandPool, const std::filesystem::path& filepath);
+    void fromFile(Device* device, const std::filesystem::path& filepath);
     void fromBuffer(Device* device, const CommandPool& commandPool, std::span<const std::byte> buffer);
 
 private:
