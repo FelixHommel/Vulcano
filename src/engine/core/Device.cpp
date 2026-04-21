@@ -81,7 +81,7 @@ Device::~Device()
     vkDestroyInstance(m_instance, nullptr);
 }
 
-VkCommandBuffer Device::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+VkCommandBuffer Device::createCommandBuffer(VkCommandBufferLevel level, bool begin) const
 {
     VkCommandBuffer cmdBuffer{VK_NULL_HANDLE};
 
@@ -105,7 +105,7 @@ VkCommandBuffer Device::createCommandBuffer(VkCommandBufferLevel level, bool beg
     return cmdBuffer;
 }
 
-void Device::submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free)
+void Device::submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free) const
 {
     if(cmdBuffer == VK_NULL_HANDLE)
         return;

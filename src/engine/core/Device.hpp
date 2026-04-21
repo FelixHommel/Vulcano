@@ -45,8 +45,8 @@ public:
 
     [[nodiscard]] const Queue& graphicsQueue() const noexcept { return m_graphicsQueue; }
 
-    [[nodiscard]] VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, bool begin = true);
-    void submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free = true);
+    [[nodiscard]] VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, bool begin = true) const;
+    void submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free = true) const;
 
 private:
     static constexpr auto VULKAN_API_VERSION{VK_API_VERSION_1_3};
