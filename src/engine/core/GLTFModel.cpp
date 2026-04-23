@@ -26,9 +26,6 @@ GLTFModel::GLTFModel(Device& device)
 
 GLTFModel::~GLTFModel()
 {
-    for(auto& n : m_nodes)
-        delete n;
-
     vkDestroyBuffer(m_device.handle(), vertices.buffer, nullptr);
     vkFreeMemory(m_device.handle(), vertices.memory, nullptr);
     vkDestroyBuffer(m_device.handle(), indices.buffer, nullptr);
@@ -91,7 +88,7 @@ void GLTFModel::loadMaterials(tinygltf::Model& input)
 
 void GLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, GLTFModel::Node* parent, std::vector<std::uint32_t>& indexBuffer, std::vector<Vertex>& vertexBuffer)
 {
-    auto* node{new GLTFModel::Node};
+    auto* node{new GLTFModel::Node()};
     node->matrix = glm::mat4(1.f);
     node->parent = parent;
 
@@ -220,9 +217,9 @@ void GLTFModel::loadNode(const tinygltf::Node& inputNode, const tinygltf::Model&
     }
 
     if(parent != nullptr)
-        parent->children.push_back(node);
+        parent->children.push_back(std::unique_ptr<GLTFModel::Node>(node));
     else
-        m_nodes.push_back(node);
+        m_nodes.push_back(std::unique_ptr<GLTFModel::Node>(node));
 }
 
 void GLTFModel::draw(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout)
@@ -231,16 +228,16 @@ void GLTFModel::draw(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout)
     vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertices.buffer, &offset);
     vkCmdBindIndexBuffer(cmdBuffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-    for(auto& node : m_nodes)
-        drawNode(cmdBuffer, pipelineLayout, node);
+    for(const auto& node : m_nodes)
+        drawNode(cmdBuffer, pipelineLayout, *node);
 }
 
-void GLTFModel::drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, GLTFModel::Node* node)
+void GLTFModel::drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, const GLTFModel::Node& node)
 {
-    if(node->mesh.primitives.size() > 0)
+    if(!node.mesh.primitives.empty())
     {
-        auto& nodeMatrix{ node->matrix };
-        auto* currentParent{ node->parent };
+        auto nodeMatrix{ node.matrix };
+        const auto* currentParent{ node.parent };
 
         while(currentParent != nullptr)
         {
@@ -249,7 +246,7 @@ void GLTFModel::drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLay
         }
 
         vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &nodeMatrix);
-        for(auto& primitive : node->mesh.primitives)
+        for(const auto& primitive : node.mesh.primitives)
         {
             if(primitive.indexCount > 0)
             {
@@ -261,8 +258,8 @@ void GLTFModel::drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLay
         }
     }
 
-    for(auto& child : node->children)
-        drawNode(cmdBuffer, pipelineLayout, child);
+    for(const auto& child : node.children)
+        drawNode(cmdBuffer, pipelineLayout, *child);
 }
 
 } // namespace vulc

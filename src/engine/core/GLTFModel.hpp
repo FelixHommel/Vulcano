@@ -66,16 +66,10 @@ public:
 
     struct Node
     {
-        Node* parent;
-        std::vector<Node*> children;
+        Node* parent{nullptr};
+        std::vector<std::unique_ptr<Node>> children;
         Mesh mesh;
         glm::mat4 matrix;
-
-        ~Node()
-        {
-            for(auto& c : children)
-                delete c;
-        }
     };
 
     struct Material
@@ -125,9 +119,9 @@ private:
     std::vector<GLTFModel::Image> m_images;
     std::vector<GLTFModel::Texture> m_textures;
     std::vector<GLTFModel::Material> m_materials;
-    std::vector<GLTFModel::Node*> m_nodes;
+    std::vector<std::unique_ptr<GLTFModel::Node>> m_nodes;
 
-    void drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, GLTFModel::Node* node);
+    void drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, const GLTFModel::Node& node);
 };
 
 namespace gltf
