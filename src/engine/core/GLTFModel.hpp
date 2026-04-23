@@ -19,17 +19,17 @@
 namespace
 {
 
-constexpr auto BASE_COLOR_FACTOR{"baseColorFactor"};
-constexpr auto BASE_COLOR_TEXTURE{"baseColorTexture"};
+constexpr auto BASE_COLOR_FACTOR{ "baseColorFactor" };
+constexpr auto BASE_COLOR_TEXTURE{ "baseColorTexture" };
 
-constexpr std::size_t TRANSLATION_SIZE{3};
-constexpr std::size_t ROTATION_SIZE{4};
-constexpr std::size_t SCALE_SIZE{3};
-constexpr std::size_t MATRIX_SIZE{16};
+constexpr std::size_t TRANSLATION_SIZE{ 3 };
+constexpr std::size_t ROTATION_SIZE{ 4 };
+constexpr std::size_t SCALE_SIZE{ 3 };
+constexpr std::size_t MATRIX_SIZE{ 16 };
 
-constexpr auto GLTF_PRIMITIVE_ATTRIBUTE_POSITION{"POSITION"};
-constexpr auto GLTF_PRIMITIVE_ATTRIBUTE_NORMAL{"NORMAL"};
-constexpr auto GLTF_PRIMITIVE_ATTRIBUTE_TEX_COORD{"TEXCOORD_0"};
+constexpr auto GLTF_PRIMITIVE_ATTRIBUTE_POSITION{ "POSITION" };
+constexpr auto GLTF_PRIMITIVE_ATTRIBUTE_NORMAL{ "NORMAL" };
+constexpr auto GLTF_PRIMITIVE_ATTRIBUTE_TEX_COORD{ "TEXCOORD_0" };
 
 } // namespace
 
@@ -66,7 +66,7 @@ public:
 
     struct Node
     {
-        Node* parent{nullptr};
+        Node* parent{ nullptr };
         std::vector<std::unique_ptr<Node>> children;
         Mesh mesh;
         glm::mat4 matrix;
@@ -80,7 +80,7 @@ public:
 
     struct Image
     {
-        std::unique_ptr<vulc::Texture> texture{std::make_unique<vulc::Texture>()};
+        std::unique_ptr<vulc::Texture> texture;
         VkDescriptorSet descriptorSet;
     };
 
@@ -106,7 +106,13 @@ public:
     void loadImages(tinygltf::Model& input);
     void loadTextures(tinygltf::Model& input);
     void loadMaterials(tinygltf::Model& input);
-    void loadNode(const tinygltf::Node& inputNode, const tinygltf::Model& input, GLTFModel::Node* parent, std::vector<std::uint32_t>& indexBuffer, std::vector<Vertex>& vertexBuffer);
+    void loadNode(
+        const tinygltf::Node& inputNode,
+        const tinygltf::Model& input,
+        GLTFModel::Node* parent,
+        std::vector<std::uint32_t>& indexBuffer,
+        std::vector<Vertex>& vertexBuffer
+    );
 
     void draw(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout);
 
@@ -134,9 +140,9 @@ static inline GLTFModel* loadGLTF(Device& device, const std::filesystem::path& f
     std::string error{};
     std::string warning{};
 
-    bool fileLoaded{gltfContext.LoadASCIIFromFile(&gltfInput, &error, &warning, filepath.string())};
+    bool fileLoaded{ gltfContext.LoadASCIIFromFile(&gltfInput, &error, &warning, filepath.string()) };
 
-    auto* model{new GLTFModel(device)};
+    auto* model{ new GLTFModel(device) };
 
     VULCANO_ASSERT(model != nullptr, "The model must be initialized");
 
@@ -149,8 +155,8 @@ static inline GLTFModel* loadGLTF(Device& device, const std::filesystem::path& f
         model->loadMaterials(gltfInput);
         model->loadTextures(gltfInput);
 
-        const tinygltf::Scene& scene{gltfInput.scenes[0]};
-        for(std::size_t i{0}; i < scene.nodes.size(); ++i)
+        const tinygltf::Scene& scene{ gltfInput.scenes[0] };
+        for(std::size_t i{ 0 }; i < scene.nodes.size(); ++i)
         {
             const auto& node{ gltfInput.nodes[scene.nodes[i]] };
             model->loadNode(node, gltfInput, nullptr, indexBuffer, vertexBuffer);

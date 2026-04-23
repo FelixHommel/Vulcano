@@ -83,22 +83,18 @@ Device::~Device()
 
 VkCommandBuffer Device::createCommandBuffer(VkCommandBufferLevel level, bool begin) const
 {
-    VkCommandBuffer cmdBuffer{VK_NULL_HANDLE};
+    VkCommandBuffer cmdBuffer{ VK_NULL_HANDLE };
 
-    const VkCommandBufferAllocateInfo commandBufferAI{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = m_internalCommandPool,
-        .level = level,
-        .commandBufferCount = 1
-    };
+    const VkCommandBufferAllocateInfo commandBufferAI{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                                                       .commandPool = m_internalCommandPool,
+                                                       .level = level,
+                                                       .commandBufferCount = 1 };
     chk(vkAllocateCommandBuffers(m_device, &commandBufferAI, &cmdBuffer));
 
     if(begin)
     {
-        const VkCommandBufferBeginInfo cbBeginInfo{
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-            .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
-        };
+        const VkCommandBufferBeginInfo cbBeginInfo{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                                                    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
         chk(vkBeginCommandBuffer(cmdBuffer, &cbBeginInfo));
     }
 
@@ -112,16 +108,12 @@ void Device::submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free) const
 
     chk(vkEndCommandBuffer(cmdBuffer));
 
-    const VkSubmitInfo submitInfo{
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &cmdBuffer
-    };
+    const VkSubmitInfo submitInfo{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                                   .commandBufferCount = 1,
+                                   .pCommandBuffers = &cmdBuffer };
 
-    VkFence submitFence{VK_NULL_HANDLE};
-    const VkFenceCreateInfo fenceCI{
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
-    };
+    VkFence submitFence{ VK_NULL_HANDLE };
+    const VkFenceCreateInfo fenceCI{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
     chk(vkCreateFence(m_device, &fenceCI, nullptr, &submitFence));
 
     chk(vkQueueSubmit(m_transferQueue.queue, 1, &submitInfo, submitFence));
@@ -135,23 +127,21 @@ void Device::submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free) const
 
 void Device::prepareSDL()
 {
-    chk(SDLResult{SDL_Init(SDL_INIT_VIDEO)});
-    chk(SDLResult{SDL_Vulkan_LoadLibrary(nullptr)});
+    chk(SDLResult{ SDL_Init(SDL_INIT_VIDEO) });
+    chk(SDLResult{ SDL_Vulkan_LoadLibrary(nullptr) });
 }
 
 void Device::createInstance()
 {
     volkInitialize();
 
-    const VkApplicationInfo appInfo{
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName = "VulkanRenderer",
-        .apiVersion = VULKAN_API_VERSION
-    };
+    const VkApplicationInfo appInfo{ .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+                                     .pApplicationName = "VulkanRenderer",
+                                     .apiVersion = VULKAN_API_VERSION };
 
-    std::uint32_t instanceExtensionSDLCount{0};
-    const auto* instanceExtensionsSDL{SDL_Vulkan_GetInstanceExtensions(&instanceExtensionSDLCount)};
-    const std::span<const char* const> sdlExtensions{instanceExtensionsSDL, instanceExtensionSDLCount};
+    std::uint32_t instanceExtensionSDLCount{ 0 };
+    const auto* instanceExtensionsSDL{ SDL_Vulkan_GetInstanceExtensions(&instanceExtensionSDLCount) };
+    const std::span<const char* const> sdlExtensions{ instanceExtensionsSDL, instanceExtensionSDLCount };
 
     std::vector<const char*> extensions(
         std::move_iterator(sdlExtensions.cbegin()), std::move_iterator(sdlExtensions.cend())
@@ -159,12 +149,10 @@ void Device::createInstance()
     if constexpr(ENABLE_VALIDATION_LAYERS)
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    VkInstanceCreateInfo instanceCI{
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo = &appInfo,
-        .enabledExtensionCount = static_cast<std::uint32_t>(extensions.size()),
-        .ppEnabledExtensionNames = extensions.data()
-    };
+    VkInstanceCreateInfo instanceCI{ .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+                                     .pApplicationInfo = &appInfo,
+                                     .enabledExtensionCount = static_cast<std::uint32_t>(extensions.size()),
+                                     .ppEnabledExtensionNames = extensions.data() };
 
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCI{};
     if constexpr(ENABLE_VALIDATION_LAYERS)
@@ -173,8 +161,9 @@ void Device::createInstance()
         debugMessengerCI.messageSeverity
             = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
             | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debugMessengerCI.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-            | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        debugMessengerCI.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                                     | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                                     | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         debugMessengerCI.pfnUserCallback = ::debugMessageCallback;
 
         instanceCI.enabledLayerCount = static_cast<std::uint32_t>(DEVICE_LAYERS.size());
@@ -206,7 +195,7 @@ void Device::createDebugMessenger()
 void Device::pickPhysicalDevice()
 {
     // NOTE: Retrieve all physical devices
-    std::uint32_t deviceCount{0};
+    std::uint32_t deviceCount{ 0 };
     chk(vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr));
     std::vector<VkPhysicalDevice> devices(deviceCount);
     chk(vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data()));
@@ -214,19 +203,19 @@ void Device::pickPhysicalDevice()
     // TODO: Implement a robuster device selection algorithm
     m_physicalDevice = devices.at(0);
 
-    VkPhysicalDeviceProperties2 deviceProperties{.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+    VkPhysicalDeviceProperties2 deviceProperties{ .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
     vkGetPhysicalDeviceProperties2(m_physicalDevice, &deviceProperties);
     spdlog::info("Selected device: {}", deviceProperties.properties.deviceName);
 }
 
 void Device::findQueueFamilies()
 {
-    std::uint32_t queueFamilyCount{0};
+    std::uint32_t queueFamilyCount{ 0 };
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
 
-    for(std::size_t i{0}; i < queueFamilies.size(); ++i)
+    for(std::size_t i{ 0 }; i < queueFamilies.size(); ++i)
     {
         // NOTE: Not the best queue selection heuristic (the first queue that fits the flag is chosen) but it works for now
 
@@ -236,9 +225,14 @@ void Device::findQueueFamilies()
         if((queueFamilies.at(i).queueFlags & VK_QUEUE_TRANSFER_BIT) != 0u)
             m_transferQueue.queueFamilyIndex = i;
 
-        if(m_graphicsQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX && m_transferQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX)
+        if(m_graphicsQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX
+           && m_transferQueue.queueFamilyIndex != ::INVALID_QUEUE_INDEX)
         {
-            spdlog::info("Found queues for graphics and transfer. Graphics index: {} | Transfer index: {}", m_graphicsQueue.queueFamilyIndex, m_transferQueue.queueFamilyIndex);
+            spdlog::info(
+                "Found queues for graphics and transfer. Graphics index: {} | Transfer index: {}",
+                m_graphicsQueue.queueFamilyIndex,
+                m_transferQueue.queueFamilyIndex
+            );
             break;
         }
     }
@@ -249,45 +243,39 @@ void Device::findQueueFamilies()
         m_transferQueue.queueFamilyIndex = m_graphicsQueue.queueFamilyIndex;
     }
 
-    chk(SDLResult{SDL_Vulkan_GetPresentationSupport(m_instance, m_physicalDevice, m_graphicsQueue.queueFamilyIndex)});
+    chk(SDLResult{ SDL_Vulkan_GetPresentationSupport(m_instance, m_physicalDevice, m_graphicsQueue.queueFamilyIndex) });
 }
 
 void Device::createDevice()
 {
-    VkPhysicalDeviceVulkan12Features enabledVk12Features{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .descriptorIndexing = VK_TRUE,
-        .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
-        .descriptorBindingVariableDescriptorCount = VK_TRUE,
-        .runtimeDescriptorArray = VK_TRUE,
-        .bufferDeviceAddress = VK_TRUE
-    };
+    VkPhysicalDeviceVulkan12Features enabledVk12Features{ .sType
+                                                          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+                                                          .descriptorIndexing = VK_TRUE,
+                                                          .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+                                                          .descriptorBindingVariableDescriptorCount = VK_TRUE,
+                                                          .runtimeDescriptorArray = VK_TRUE,
+                                                          .bufferDeviceAddress = VK_TRUE };
 
-    const VkPhysicalDeviceVulkan13Features enabledVk13Features{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .pNext = &enabledVk12Features,
-        .synchronization2 = VK_TRUE,
-        .dynamicRendering = VK_TRUE
-    };
+    const VkPhysicalDeviceVulkan13Features enabledVk13Features{ .sType
+                                                                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+                                                                .pNext = &enabledVk12Features,
+                                                                .synchronization2 = VK_TRUE,
+                                                                .dynamicRendering = VK_TRUE };
 
-    const VkPhysicalDeviceFeatures enabledVk10Features{.samplerAnisotropy = VK_TRUE};
+    const VkPhysicalDeviceFeatures enabledVk10Features{ .samplerAnisotropy = VK_TRUE };
 
-    const VkDeviceQueueCreateInfo queueCI{
-        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-        .queueFamilyIndex = m_graphicsQueue.queueFamilyIndex,
-        .queueCount = 1,
-        .pQueuePriorities = &QUEUE_FAMILY_PRIOS
-    };
+    const VkDeviceQueueCreateInfo queueCI{ .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                                           .queueFamilyIndex = m_graphicsQueue.queueFamilyIndex,
+                                           .queueCount = 1,
+                                           .pQueuePriorities = &QUEUE_FAMILY_PRIOS };
 
-    const VkDeviceCreateInfo deviceCI{
-        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &enabledVk13Features,
-        .queueCreateInfoCount = 1,
-        .pQueueCreateInfos = &queueCI,
-        .enabledExtensionCount = static_cast<std::uint32_t>(DEVICE_EXTENSIONS.size()),
-        .ppEnabledExtensionNames = DEVICE_EXTENSIONS.data(),
-        .pEnabledFeatures = &enabledVk10Features
-    };
+    const VkDeviceCreateInfo deviceCI{ .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+                                       .pNext = &enabledVk13Features,
+                                       .queueCreateInfoCount = 1,
+                                       .pQueueCreateInfos = &queueCI,
+                                       .enabledExtensionCount = static_cast<std::uint32_t>(DEVICE_EXTENSIONS.size()),
+                                       .ppEnabledExtensionNames = DEVICE_EXTENSIONS.data(),
+                                       .pEnabledFeatures = &enabledVk10Features };
     chk(vkCreateDevice(m_physicalDevice, &deviceCI, nullptr, &m_device));
 
     volkLoadDevice(m_device);
@@ -298,28 +286,24 @@ void Device::createDevice()
 
 void Device::createAllocator()
 {
-    const VmaVulkanFunctions vkFunctions{
-        .vkGetInstanceProcAddr = vkGetInstanceProcAddr, .vkGetDeviceProcAddr = vkGetDeviceProcAddr
-    };
+    const VmaVulkanFunctions vkFunctions{ .vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+                                          .vkGetDeviceProcAddr = vkGetDeviceProcAddr };
 
-    const VmaAllocatorCreateInfo allocatorCI{
-        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
-        .physicalDevice = m_physicalDevice,
-        .device = m_device,
-        .pVulkanFunctions = &vkFunctions,
-        .instance = m_instance,
-        .vulkanApiVersion = VULKAN_API_VERSION
-    };
+    const VmaAllocatorCreateInfo allocatorCI{ .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+                                              .physicalDevice = m_physicalDevice,
+                                              .device = m_device,
+                                              .pVulkanFunctions = &vkFunctions,
+                                              .instance = m_instance,
+                                              .vulkanApiVersion = VULKAN_API_VERSION };
     chk(vmaCreateAllocator(&allocatorCI, &m_allocator));
 }
 
 void Device::createCommandPool()
 {
-    const VkCommandPoolCreateInfo commandPoolCI{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = m_transferQueue.queueFamilyIndex
-    };
+    const VkCommandPoolCreateInfo commandPoolCI{ .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                                                 .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT
+                                                        | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+                                                 .queueFamilyIndex = m_transferQueue.queueFamilyIndex };
     chk(vkCreateCommandPool(m_device, &commandPoolCI, nullptr, &m_internalCommandPool));
 }
 

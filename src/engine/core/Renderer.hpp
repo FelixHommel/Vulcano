@@ -44,7 +44,7 @@ public:
     void requestSwapchainRecreate() noexcept { m_recreateSwapchain = true; }
 
 private:
-    static constexpr auto VERTEX_INDICES{3};
+    static constexpr auto VERTEX_INDICES{ 3 };
 
     const Device& m_device;
     Window& m_window;
@@ -55,12 +55,12 @@ private:
     std::vector<std::unique_ptr<FrameResources>> m_frameResources;
     std::vector<VkSemaphore> m_renderSemaphores;
 
-    VkDescriptorPool m_descriptorPool{VK_NULL_HANDLE};
-    VkDescriptorSet m_descriptorSet{VK_NULL_HANDLE};
+    VkDescriptorPool m_descriptorPool{ VK_NULL_HANDLE };
+    VkDescriptorSet m_descriptorSet{ VK_NULL_HANDLE };
 
-    std::uint32_t m_frameIndex{0};
-    std::uint32_t m_imageIndex{0};
-    bool m_recreateSwapchain{false};
+    std::uint32_t m_frameIndex{ 0 };
+    std::uint32_t m_imageIndex{ 0 };
+    bool m_recreateSwapchain{ false };
 
     void createFrameResources(const CommandPool& commandPool);
     void createRenderSemaphores();

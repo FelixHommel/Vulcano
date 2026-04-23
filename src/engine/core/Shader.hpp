@@ -47,8 +47,8 @@ public:
     [[nodiscard]] slang::IModule* loadFromSource(const std::string& moduleName, const std::filesystem::path& filepath);
 
 private:
-    Slang::ComPtr<slang::IGlobalSession> m_globalSession{nullptr};
-    Slang::ComPtr<slang::ISession> m_slangSession{nullptr};
+    Slang::ComPtr<slang::IGlobalSession> m_globalSession{ nullptr };
+    Slang::ComPtr<slang::ISession> m_slangSession{ nullptr };
 };
 
 class Shader
@@ -74,7 +74,7 @@ private:
     const Device& m_device;
     SlangContext& m_slangContext;
 
-    VkShaderModule m_shaderModule{VK_NULL_HANDLE};
+    VkShaderModule m_shaderModule{ VK_NULL_HANDLE };
 };
 
 } // namespace vulc

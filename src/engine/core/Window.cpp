@@ -9,9 +9,9 @@ namespace vulc
 {
 
 Window::Window(const std::string& title, int width, int height)
-    : m_window{std::unique_ptr<SDL_Window, SdlWindowDeleter>(
+    : m_window{ std::unique_ptr<SDL_Window, SdlWindowDeleter>(
           SDL_CreateWindow(title.c_str(), width, height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE), {}
-      )}
+      ) }
 {}
 
 } // namespace vulc

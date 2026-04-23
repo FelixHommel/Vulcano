@@ -13,13 +13,11 @@
 namespace vulc
 {
 
-CommandPool::CommandPool(const Device& device) : m_device{device}
+CommandPool::CommandPool(const Device& device) : m_device{ device }
 {
-    const VkCommandPoolCreateInfo commandPoolCI{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = m_device.graphicsQueue().queueFamilyIndex
-    };
+    const VkCommandPoolCreateInfo commandPoolCI{ .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                                                 .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+                                                 .queueFamilyIndex = m_device.graphicsQueue().queueFamilyIndex };
     chk(vkCreateCommandPool(m_device.handle(), &commandPoolCI, nullptr, &m_commandPool));
 }
 
@@ -30,11 +28,10 @@ CommandPool::~CommandPool()
 
 void CommandPool::allocateCommandBuffers(std::span<VkCommandBuffer> commandBuffers)
 {
-    const VkCommandBufferAllocateInfo cbAllocCI{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = m_commandPool,
-        .commandBufferCount = static_cast<std::uint32_t>(commandBuffers.size())
-    };
+    const VkCommandBufferAllocateInfo cbAllocCI{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                                                 .commandPool = m_commandPool,
+                                                 .commandBufferCount
+                                                 = static_cast<std::uint32_t>(commandBuffers.size()) };
     chk(vkAllocateCommandBuffers(m_device.handle(), &cbAllocCI, commandBuffers.data()));
 }
 

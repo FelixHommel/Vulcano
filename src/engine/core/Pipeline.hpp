@@ -14,7 +14,7 @@
 namespace
 {
 
-constexpr std::uint32_t DEFAULT_MAX_DESCRIPTOR_COUNT{16};
+constexpr std::uint32_t DEFAULT_MAX_DESCRIPTOR_COUNT{ 16 };
 
 } // namespace
 
@@ -47,15 +47,15 @@ public:
     }
 
 private:
-    static constexpr auto BLEND_COLOR_WRITE_MASK{0xF};
+    static constexpr auto BLEND_COLOR_WRITE_MASK{ 0xF };
 
     const Device& m_device;
-    std::uint32_t m_maxDescriptorCount{0};
+    std::uint32_t m_maxDescriptorCount{ 0 };
 
-    VkDescriptorSetLayout m_textureDescriptorSetLayout{VK_NULL_HANDLE};
+    VkDescriptorSetLayout m_textureDescriptorSetLayout{ VK_NULL_HANDLE };
 
-    VkPipelineLayout m_pipelineLayout{VK_NULL_HANDLE};
-    VkPipeline m_pipeline{VK_NULL_HANDLE};
+    VkPipelineLayout m_pipelineLayout{ VK_NULL_HANDLE };
+    VkPipeline m_pipeline{ VK_NULL_HANDLE };
 
     void createDescriptorSetLayout();
     void createPipelineLayout(const Shader& shader, const SwapchainImageFormats& imageFormats);

@@ -59,33 +59,36 @@ struct chkTraits;
 template<>
 struct chkTraits<VkResult>
 {
-    static bool failed(VkResult result) {return result != VK_SUCCESS;}
-    static std::string message(VkResult result) {return std::format("Vulkan call returned an error ({})", result);}
-    static int exitCode(VkResult result) {return static_cast<int>(result);}
+    static bool failed(VkResult result) { return result != VK_SUCCESS; }
+    static std::string message(VkResult result) { return std::format("Vulkan call returned an error ({})", result); }
+    static int exitCode(VkResult result) { return static_cast<int>(result); }
 };
 
 template<>
 struct chkTraits<bool>
 {
-    static bool failed(bool result) {return !result;}
-    static std::string message([[maybe_unused]] bool result) {return "Call returned an error";}
-    static int exitCode([[maybe_unused]] bool result) {return 1;}
+    static bool failed(bool result) { return !result; }
+    static std::string message([[maybe_unused]] bool result) { return "Call returned an error"; }
+    static int exitCode([[maybe_unused]] bool result) { return 1; }
 };
 
 template<>
 struct chkTraits<ktxResult>
 {
-    static bool failed(ktxResult result) {return result != KTX_SUCCESS;}
-    static std::string message(ktxResult result) {return std::format("KTX call returned an error ({})", result);}
-    static int exitCode(ktxResult result) {return static_cast<int>(result);}
+    static bool failed(ktxResult result) { return result != KTX_SUCCESS; }
+    static std::string message(ktxResult result) { return std::format("KTX call returned an error ({})", result); }
+    static int exitCode(ktxResult result) { return static_cast<int>(result); }
 };
 
 template<>
 struct chkTraits<vulc::SDLResult>
 {
-    static bool failed(vulc::SDLResult result) {return !result.value;}
-    static std::string message([[maybe_unused]] vulc::SDLResult result) {return std::format("SDL call returned an error with the following message: {}", SDL_GetError());}
-    static int exitCode([[maybe_unused]] vulc::SDLResult result) {return 1;}
+    static bool failed(vulc::SDLResult result) { return !result.value; }
+    static std::string message([[maybe_unused]] vulc::SDLResult result)
+    {
+        return std::format("SDL call returned an error with the following message: {}", SDL_GetError());
+    }
+    static int exitCode([[maybe_unused]] vulc::SDLResult result) { return 1; }
 };
 
 } // namespace
@@ -200,14 +203,14 @@ constexpr const char* msgOrNull(const char* pMsg) noexcept
 /// Failure of the assertion results in std::abort() being called
 ///
 /// \param cond the condition the assertion needs to pass
-#    define VULCANO_ASSERT(cond, ...)                                                                 \
-        do                                                                                       \
-        {                                                                                        \
-            if(!(cond))                                                                          \
-            {                                                                                    \
+#    define VULCANO_ASSERT(cond, ...)                                                                \
+        do                                                                                           \
+        {                                                                                            \
+            if(!(cond))                                                                              \
+            {                                                                                        \
                 ::vulc::assertion::assertion_fail(#cond, ::vulc::assertion::msgOrNull(__VA_ARGS__)); \
-            }                                                                                    \
-        }                                                                                        \
+            }                                                                                        \
+        }                                                                                            \
         while(0)
 #else
 #    define VULCANO_ASSERT(cond, ...) ((void)0)

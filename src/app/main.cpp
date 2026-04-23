@@ -36,59 +36,60 @@ namespace
 
 using namespace vulc::globals;
 
-constexpr auto WINDOW_TITLE{"How To Vulkan"};
-constexpr auto WINDOW_WIDTH_INIT{1280};
-constexpr auto WINDOW_HEIGHT_INIT{720};
+constexpr auto WINDOW_TITLE{ "How To Vulkan" };
+constexpr auto WINDOW_WIDTH_INIT{ 1280 };
+constexpr auto WINDOW_HEIGHT_INIT{ 720 };
 
-constexpr std::size_t NUM_TEXTURES{3};
-constexpr std::size_t NUM_MODELS{3};
-constexpr auto TIME_FACTOR{1000.f};
-constexpr auto ZOOM_FACTOR{10.f};
-constexpr auto DEFAULT_CAMERA_POS{glm::vec3(0.f, 0.f, -6.f)};
+constexpr std::size_t NUM_TEXTURES{ 3 };
+constexpr std::size_t NUM_MODELS{ 3 };
+constexpr auto TIME_FACTOR{ 1000.f };
+constexpr auto ZOOM_FACTOR{ 10.f };
+constexpr auto DEFAULT_CAMERA_POS{ glm::vec3(0.f, 0.f, -6.f) };
 
 } // namespace
 
 int main()
 {
     // NOTE: Step 1 - Prepare Vulkan
-    auto device{std::make_unique<vulc::Device>()};
+    auto device{ std::make_unique<vulc::Device>() };
 
     // NOTE: Step 2 - Preapre the Vulkan building pieces
-    auto window{std::make_unique<vulc::Window>(WINDOW_TITLE, WINDOW_WIDTH_INIT, WINDOW_HEIGHT_INIT)};
-    auto swapchain{std::make_unique<vulc::Swapchain>(*device, *window)};
-    auto slangContext{std::make_unique<vulc::SlangContext>()};
+    auto window{ std::make_unique<vulc::Window>(WINDOW_TITLE, WINDOW_WIDTH_INIT, WINDOW_HEIGHT_INIT) };
+    auto swapchain{ std::make_unique<vulc::Swapchain>(*device, *window) };
+    auto slangContext{ std::make_unique<vulc::SlangContext>() };
     auto shader{
         std::make_unique<vulc::Shader>(*device, *slangContext, "meshShader", PROJ_ROOT "resources/shaders/shader.slang")
     };
-    auto pipeline{std::make_unique<vulc::Pipeline>(*device, *shader, swapchain->imageFormats())};
+    auto pipeline{ std::make_unique<vulc::Pipeline>(*device, *shader, swapchain->imageFormats()) };
 
     // NOTE: Step 3 - Prepare dynamic Vulkan resources (Renderer specific)
-    auto commandPool{std::make_unique<vulc::CommandPool>(*device)};
+    auto commandPool{ std::make_unique<vulc::CommandPool>(*device) };
 
     // NOTE: Step 4 - Load Resources
-    auto mesh{std::make_unique<vulc::ObjModel>(*device, PROJ_ROOT "resources/models/suzanne.obj")};
+    auto mesh{ std::make_unique<vulc::ObjModel>(*device, PROJ_ROOT "resources/models/suzanne.obj") };
 
     std::vector<std::unique_ptr<vulc::Texture>> textures{};
     textures.reserve(NUM_TEXTURES);
-    for(auto i{0}; i < NUM_TEXTURES; ++i)
-    {
-        auto pTexture{ std::make_unique<vulc::Texture>() };
-        pTexture->fromFile(device.get(), std::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
-        textures.push_back(std::move(pTexture));
-    }
-    auto gltfModel{std::unique_ptr<GLTFModel>(gltf::loadGLTF(*device, std::format("{}/resources/gltf/FlightHelmet/glTF/FlightHelmet.gltf", PROJ_ROOT)))};
+    for(auto i{ 0 }; i < NUM_TEXTURES; ++i)
+        textures.emplace_back(
+            texture::fromFile(device.get(), std::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i))
+        );
 
-    vulc::Renderer renderer{*device, *window, *swapchain, *pipeline, std::move(textures), *commandPool};
+    auto gltfModel{ std::unique_ptr<GLTFModel>(
+        gltf::loadGLTF(*device, std::format("{}/resources/gltf/FlightHelmet/glTF/FlightHelmet.gltf", PROJ_ROOT))
+    ) };
+
+    vulc::Renderer renderer{ *device, *window, *swapchain, *pipeline, std::move(textures), *commandPool };
 
     vulc::ShaderData shaderData{};
-    glm::vec3 cameraPos{::DEFAULT_CAMERA_POS};
+    glm::vec3 cameraPos{ ::DEFAULT_CAMERA_POS };
     std::array<glm::vec3, ::NUM_MODELS> objectRotations{};
 
-    bool quit{false};
-    std::uint64_t lastTime{SDL_GetTicks()};
+    bool quit{ false };
+    std::uint64_t lastTime{ SDL_GetTicks() };
     while(!quit)
     {
-        const float deltaTime{static_cast<float>(SDL_GetTicks() - lastTime) / ::TIME_FACTOR};
+        const float deltaTime{ static_cast<float>(SDL_GetTicks() - lastTime) / ::TIME_FACTOR };
         lastTime = SDL_GetTicks();
 
         for(SDL_Event event; SDL_PollEvent(&event);)
@@ -118,7 +119,7 @@ int main()
 
                 if(event.key.key == SDLK_MINUS || event.key.key == SDLK_KP_PLUS)
                     shaderData.selected = (shaderData.selected > 0) ? shaderData.selected - 1 : ::NUM_MODELS - 1;
-                
+
                 if(event.key.key == SDLK_ESCAPE)
                     quit = true;
             }
@@ -127,7 +128,7 @@ int main()
                 renderer.requestSwapchainRecreate();
         }
 
-        const auto extent{swapchain->extent()};
+        const auto extent{ swapchain->extent() };
         shaderData.projection = glm::perspective(
             glm::radians(::CAMERA_FOV),
             static_cast<float>(extent.width) / static_cast<float>(extent.height),
@@ -136,9 +137,9 @@ int main()
         );
         shaderData.view = glm::translate(glm::mat4(1.f), cameraPos);
 
-        for(auto i{0}; i < ::NUM_MODELS; ++i)
+        for(auto i{ 0 }; i < ::NUM_MODELS; ++i)
         {
-            const auto instancePos{glm::vec3((static_cast<float>(i) - 1.f) * ::INSTANCE_OFFSET_MUL, 0.f, 0.f)};
+            const auto instancePos{ glm::vec3((static_cast<float>(i) - 1.f) * ::INSTANCE_OFFSET_MUL, 0.f, 0.f) };
             shaderData.model.at(i)
                 = glm::translate(glm::mat4(1.f), instancePos) * glm::mat4_cast(glm::quat(objectRotations.at(i)));
         }

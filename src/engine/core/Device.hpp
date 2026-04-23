@@ -13,7 +13,9 @@
 namespace
 {
 
-constexpr auto INVALID_QUEUE_INDEX{std::numeric_limits<std::uint32_t>::max()}; ///< Value that indicates an invalid/unspecified queue index
+constexpr auto INVALID_QUEUE_INDEX{
+    std::numeric_limits<std::uint32_t>::max()
+}; ///< Value that indicates an invalid/unspecified queue index
 
 } // namespace
 
@@ -22,8 +24,8 @@ namespace vulc
 
 struct Queue
 {
-    VkQueue queue{VK_NULL_HANDLE};
-    std::uint32_t queueFamilyIndex{::INVALID_QUEUE_INDEX};
+    VkQueue queue{ VK_NULL_HANDLE };
+    std::uint32_t queueFamilyIndex{ ::INVALID_QUEUE_INDEX };
 };
 
 class Device
@@ -45,11 +47,13 @@ public:
 
     [[nodiscard]] const Queue& graphicsQueue() const noexcept { return m_graphicsQueue; }
 
-    [[nodiscard]] VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, bool begin = true) const;
+    [[nodiscard]] VkCommandBuffer createCommandBuffer(
+        VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY, bool begin = true
+    ) const;
     void submitCommandBuffer(VkCommandBuffer cmdBuffer, bool free = true) const;
 
 private:
-    static constexpr auto VULKAN_API_VERSION{VK_API_VERSION_1_3};
+    static constexpr auto VULKAN_API_VERSION{ VK_API_VERSION_1_3 };
     static constexpr auto ENABLE_VALIDATION_LAYERS{
 #if VULCANO_DEBUG
         true
@@ -57,19 +61,19 @@ private:
         false
 #endif
     };
-    static constexpr auto QUEUE_FAMILY_PRIOS{1.f};
+    static constexpr auto QUEUE_FAMILY_PRIOS{ 1.f };
 
-    const std::vector<const char*> DEVICE_EXTENSIONS{VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_dynamic_rendering"};
-    const std::vector<const char*> DEVICE_LAYERS{"VK_LAYER_KHRONOS_validation"};
+    const std::vector<const char*> DEVICE_EXTENSIONS{ VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_dynamic_rendering" };
+    const std::vector<const char*> DEVICE_LAYERS{ "VK_LAYER_KHRONOS_validation" };
 
-    VkInstance m_instance{VK_NULL_HANDLE};
-    VkDebugUtilsMessengerEXT m_debugMessenger{VK_NULL_HANDLE};
-    VkPhysicalDevice m_physicalDevice{VK_NULL_HANDLE};
-    VkDevice m_device{VK_NULL_HANDLE};
+    VkInstance m_instance{ VK_NULL_HANDLE };
+    VkDebugUtilsMessengerEXT m_debugMessenger{ VK_NULL_HANDLE };
+    VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
+    VkDevice m_device{ VK_NULL_HANDLE };
     Queue m_graphicsQueue;
     Queue m_transferQueue;
-    VmaAllocator m_allocator{VK_NULL_HANDLE};
-    VkCommandPool m_internalCommandPool{VK_NULL_HANDLE};
+    VmaAllocator m_allocator{ VK_NULL_HANDLE };
+    VkCommandPool m_internalCommandPool{ VK_NULL_HANDLE };
 
     static void prepareSDL();
     void createInstance();

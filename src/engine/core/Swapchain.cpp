@@ -17,7 +17,7 @@
 namespace vulc
 {
 
-Swapchain::Swapchain(const Device& device, Window& window) : m_device{device}
+Swapchain::Swapchain(const Device& device, Window& window) : m_device{ device }
 {
     createSurface(window);
     createSwapchain();
@@ -35,7 +35,7 @@ Swapchain::~Swapchain()
 
 void Swapchain::recreate(Window& window)
 {
-    VkSwapchainKHR oldSwapchain{m_swapchain};
+    VkSwapchainKHR oldSwapchain{ m_swapchain };
     destroySwapchainImages();
 
     createSurface(window, true);
@@ -49,18 +49,18 @@ void Swapchain::recreate(Window& window)
 void Swapchain::createSurface(Window& window, bool recreate)
 {
     if(!recreate)
-        chk(SDLResult{SDL_Vulkan_CreateSurface(window.handle(), m_device.instance(), nullptr, &m_surface)});
+        chk(SDLResult{ SDL_Vulkan_CreateSurface(window.handle(), m_device.instance(), nullptr, &m_surface) });
 
-    int windowWidth{0};
-    int windowHeight{0};
-    chk(SDLResult{SDL_GetWindowSize(window.handle(), &windowWidth, &windowHeight)});
+    int windowWidth{ 0 };
+    int windowHeight{ 0 };
+    chk(SDLResult{ SDL_GetWindowSize(window.handle(), &windowWidth, &windowHeight) });
 
     chk(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_device.physicalDevice(), m_surface, &m_surfaceCapabilities));
 
     m_swapchainExtent = m_surfaceCapabilities.currentExtent;
     if(m_surfaceCapabilities.currentExtent.width == WAYLAND_SURFACE_FULLSCREEN_SPECIAL_VALUE)
         m_swapchainExtent
-            = {.width = static_cast<std::uint32_t>(windowWidth), .height = static_cast<std::uint32_t>(windowHeight)};
+            = { .width = static_cast<std::uint32_t>(windowWidth), .height = static_cast<std::uint32_t>(windowHeight) };
 }
 
 void Swapchain::createSwapchain(VkSwapchainKHR oldSwapchain)
@@ -71,7 +71,7 @@ void Swapchain::createSwapchain(VkSwapchainKHR oldSwapchain)
         .minImageCount = m_surfaceCapabilities.minImageCount,
         .imageFormat = SWAPCHAIN_IMAGE_FORMAT,
         .imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
-        .imageExtent = {.width = m_swapchainExtent.width, .height = m_swapchainExtent.height},
+        .imageExtent = { .width = m_swapchainExtent.width, .height = m_swapchainExtent.height },
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
@@ -93,9 +93,9 @@ void Swapchain::createColorAttachment()
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .viewType = VK_IMAGE_VIEW_TYPE_2D,
         .format = SWAPCHAIN_IMAGE_FORMAT,
-        .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .levelCount = 1, .layerCount = 1}
+        .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .levelCount = 1, .layerCount = 1 }
     };
-    for(auto i{0}; i < m_swapchainImageCount; ++i)
+    for(auto i{ 0 }; i < m_swapchainImageCount; ++i)
     {
         viewCI.image = m_swapchainImages[i];
         chk(vkCreateImageView(m_device.handle(), &viewCI, nullptr, &m_swapchainImageViews[i]));
@@ -110,7 +110,7 @@ void Swapchain::createDepthAttachment()
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .imageType = VK_IMAGE_TYPE_2D,
         .format = m_depthFormat,
-        .extent = {.width = m_swapchainExtent.width, .height = m_swapchainExtent.height, .depth = 1},
+        .extent = { .width = m_swapchainExtent.width, .height = m_swapchainExtent.height, .depth = 1 },
         .mipLevels = 1,
         .arrayLayers = 1,
         .samples = VK_SAMPLE_COUNT_1_BIT,
@@ -118,9 +118,8 @@ void Swapchain::createDepthAttachment()
         .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED
     };
-    const VmaAllocationCreateInfo allocCI{
-        .flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, .usage = VMA_MEMORY_USAGE_AUTO
-    };
+    const VmaAllocationCreateInfo allocCI{ .flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT,
+                                           .usage = VMA_MEMORY_USAGE_AUTO };
     chk(vmaCreateImage(m_device.allocator(), &depthImageCI, &allocCI, &m_depthImage, &m_depthImageAllocation, nullptr));
 
     const VkImageViewCreateInfo depthImageViewCI{
@@ -128,17 +127,17 @@ void Swapchain::createDepthAttachment()
         .image = m_depthImage,
         .viewType = VK_IMAGE_VIEW_TYPE_2D,
         .format = m_depthFormat,
-        .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT, .levelCount = 1, .layerCount = 1}
+        .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT, .levelCount = 1, .layerCount = 1 }
     };
     chk(vkCreateImageView(m_device.handle(), &depthImageViewCI, nullptr, &m_depthImageView));
 }
 
 void Swapchain::chooseDepthFormat()
 {
-    const std::vector<VkFormat> depthFormatList{VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
+    const std::vector<VkFormat> depthFormatList{ VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
     for(const auto& format : depthFormatList)
     {
-        VkFormatProperties2 formatProperties{.sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2};
+        VkFormatProperties2 formatProperties{ .sType = VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2 };
         vkGetPhysicalDeviceFormatProperties2(m_device.physicalDevice(), format, &formatProperties);
 
         if((formatProperties.formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
@@ -165,7 +164,7 @@ void Swapchain::destroySwapchainImages()
         m_depthImageView = VK_NULL_HANDLE;
     }
 
-    for(auto i{0}; i < m_swapchainImageViews.size(); ++i)
+    for(auto i{ 0 }; i < m_swapchainImageViews.size(); ++i)
         vkDestroyImageView(m_device.handle(), m_swapchainImageViews[i], nullptr);
 
     m_swapchainImageViews.clear();

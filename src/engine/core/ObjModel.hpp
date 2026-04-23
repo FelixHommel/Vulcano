@@ -31,10 +31,10 @@ public:
 private:
     const Device& m_device;
 
-    VkDeviceSize m_indexCount{0};
-    VkDeviceSize m_vertexBufferSize{0};
-    VkBuffer m_buffer{VK_NULL_HANDLE};
-    VmaAllocation m_allocation{VK_NULL_HANDLE};
+    VkDeviceSize m_indexCount{ 0 };
+    VkDeviceSize m_vertexBufferSize{ 0 };
+    VkBuffer m_buffer{ VK_NULL_HANDLE };
+    VmaAllocation m_allocation{ VK_NULL_HANDLE };
 };
 
 } // namespace vulc

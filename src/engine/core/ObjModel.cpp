@@ -21,7 +21,7 @@
 namespace vulc
 {
 
-ObjModel::ObjModel(const Device& device, const std::filesystem::path& filepath) : m_device{device}
+ObjModel::ObjModel(const Device& device, const std::filesystem::path& filepath) : m_device{ device }
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -35,20 +35,18 @@ ObjModel::ObjModel(const Device& device, const std::filesystem::path& filepath) 
     std::vector<std::uint16_t> indices{};
     for(const auto& index : shapes[0].mesh.indices)
     {
-        const std::size_t indexBaseOffset{static_cast<std::size_t>(index.vertex_index) * 3};
-        const std::size_t normalBaseOffset{static_cast<std::size_t>(index.normal_index) * 3};
-        const std::size_t uvBaseOffset{static_cast<std::size_t>(index.texcoord_index) * 2};
+        const std::size_t indexBaseOffset{ static_cast<std::size_t>(index.vertex_index) * 3 };
+        const std::size_t normalBaseOffset{ static_cast<std::size_t>(index.normal_index) * 3 };
+        const std::size_t uvBaseOffset{ static_cast<std::size_t>(index.texcoord_index) * 2 };
 
         Vertex v{
-            .pos
-            = {attrib.vertices[indexBaseOffset],
-               -attrib.vertices[indexBaseOffset + 1],
-               attrib.vertices[indexBaseOffset + 2]},
-            .normal
-            = {attrib.normals[normalBaseOffset],
-               -attrib.normals[normalBaseOffset + 1],
-               attrib.normals[normalBaseOffset + 2]},
-            .uv = {attrib.texcoords[uvBaseOffset], 1.0 - attrib.texcoords[uvBaseOffset + 1]}
+            .pos = { attrib.vertices[indexBaseOffset],
+                    -attrib.vertices[indexBaseOffset + 1],
+                    attrib.vertices[indexBaseOffset + 2] },
+            .normal = { attrib.normals[normalBaseOffset],
+                    -attrib.normals[normalBaseOffset + 1],
+                    attrib.normals[normalBaseOffset + 2] },
+            .uv = { attrib.texcoords[uvBaseOffset], 1.0 - attrib.texcoords[uvBaseOffset + 1] }
         };
 
         vertices.push_back(std::move(v));
@@ -56,17 +54,14 @@ ObjModel::ObjModel(const Device& device, const std::filesystem::path& filepath) 
     }
 
     m_vertexBufferSize = sizeof(Vertex) * vertices.size();
-    const VkDeviceSize iBufSize{sizeof(std::uint16_t) * indices.size()};
-    const VkBufferCreateInfo bufferCI{
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = m_vertexBufferSize + iBufSize,
-        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT
-    };
-    const VmaAllocationCreateInfo vBufferAllocCI{
-        .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
-               | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
-        .usage = VMA_MEMORY_USAGE_AUTO
-    };
+    const VkDeviceSize iBufSize{ sizeof(std::uint16_t) * indices.size() };
+    const VkBufferCreateInfo bufferCI{ .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+                                       .size = m_vertexBufferSize + iBufSize,
+                                       .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT };
+    const VmaAllocationCreateInfo vBufferAllocCI{ .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+                                                         | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT
+                                                         | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+                                                  .usage = VMA_MEMORY_USAGE_AUTO };
     VmaAllocationInfo allocationInfo{};
     chk(vmaCreateBuffer(m_device.allocator(), &bufferCI, &vBufferAllocCI, &m_buffer, &m_allocation, &allocationInfo));
 

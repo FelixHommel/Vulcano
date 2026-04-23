@@ -31,7 +31,7 @@ public:
 private:
     const Device& m_device;
 
-    VkCommandPool m_commandPool{VK_NULL_HANDLE};
+    VkCommandPool m_commandPool{ VK_NULL_HANDLE };
 };
 
 } // namespace vulc
