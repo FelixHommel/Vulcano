@@ -13,6 +13,7 @@ add_library(${NAME}
     ./core/Shader.cpp
     ./core/Texture.cpp
     ./core/Window.cpp
+    ./external/TinyGLTFImplementation.cpp
     ./external/TinyObjLoaderImplementation.cpp
     ./external/VmaImplementation.cpp
     ./external/VolkImplementation.cpp
