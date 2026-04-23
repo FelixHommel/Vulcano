@@ -31,7 +31,7 @@ Texture::~Texture()
     vmaDestroyImage(m_device->allocator(), m_image, m_allocation);
 }
 
-void Texture::fromFile(const Device* device, const std::filesystem::path& filepath)
+void Texture::fromFile(Device* device, const std::filesystem::path& filepath)
 {
     // NOTE: Step 1 - init internal Texture state
     VULCANO_ASSERT(device != nullptr, "Device needs to be a valid pointer to a vulc::Device");
@@ -169,7 +169,7 @@ void Texture::fromFile(const Device* device, const std::filesystem::path& filepa
     chk(vkCreateImageView(m_device->handle(), &texViewCI, nullptr, &m_view));
 }
 
-void Texture::fromBuffer(const Device* device, std::span<const std::byte> buffer, VkFormat format, std::uint32_t texWidth, std::uint32_t texHeight)
+void Texture::fromBuffer(Device* device, std::span<const std::byte> buffer, VkFormat format, std::uint32_t texWidth, std::uint32_t texHeight)
 {
     // NOTE: Step 1 - prepare Texture internal state
     VULCANO_ASSERT(device != nullptr, "Device needs to be a valid pointer to a vulc::Device");

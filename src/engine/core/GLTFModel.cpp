@@ -2,18 +2,16 @@
 
 #include "core/Device.hpp"
 
-#include <array>
-#include <cstdint>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <spdlog/spdlog.h>
 #include <tiny_gltf.h>
-#include <unistd.h>
 #include <vulkan/vulkan_core.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <span>
 #include <vector>
@@ -21,7 +19,7 @@
 namespace vulc
 {
 
-GLTFModel::GLTFModel(const Device& device)
+GLTFModel::GLTFModel(Device& device)
     : m_device{device}
 {
 }

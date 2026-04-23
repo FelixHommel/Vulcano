@@ -3,9 +3,11 @@
 
 #include "core/Device.hpp"
 #include "core/Texture.hpp"
+#include "utility/Common.hpp"
 #include "utility/Vertex.hpp"
 
 #include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 #include <tiny_gltf.h>
 #include <volk.h>
 #include <vulkan/vulkan_core.h>
@@ -84,7 +86,7 @@ public:
 
     struct Image
     {
-        std::unique_ptr<Texture> texture;
+        std::unique_ptr<vulc::Texture> texture{std::make_unique<vulc::Texture>()};
         VkDescriptorSet descriptorSet;
     };
 
@@ -93,7 +95,7 @@ public:
         std::int32_t imageIndex;
     };
 
-    GLTFModel(const Device& device);
+    GLTFModel(Device& device);
     ~GLTFModel();
 
     GLTFModel(const GLTFModel&) = delete;
@@ -118,7 +120,7 @@ private:
     static constexpr auto GLTF_RGB_COMPONENT_COUNT{ 3u };
     static constexpr auto GLTF_RGBA_COMPONENT_COUNT{ 4u };
 
-    const Device& m_device;
+    Device& m_device;
 
     std::vector<GLTFModel::Image> m_images;
     std::vector<GLTFModel::Texture> m_textures;
@@ -127,6 +129,49 @@ private:
 
     void drawNode(VkCommandBuffer cmdBuffer, VkPipelineLayout pipelineLayout, GLTFModel::Node* node);
 };
+
+namespace gltf
+{
+
+static inline GLTFModel* loadGLTF(Device& device, const std::filesystem::path& filepath)
+{
+    tinygltf::Model gltfInput;
+    tinygltf::TinyGLTF gltfContext;
+    std::string error{};
+    std::string warning{};
+
+    bool fileLoaded{gltfContext.LoadASCIIFromFile(&gltfInput, &error, &warning, filepath.string())};
+
+    auto* model{new GLTFModel(device)};
+
+    VULCANO_ASSERT(model != nullptr, "The model must be initialized");
+
+    std::vector<std::uint32_t> indexBuffer;
+    std::vector<Vertex> vertexBuffer;
+
+    if(fileLoaded)
+    {
+        model->loadImages(gltfInput);
+        model->loadMaterials(gltfInput);
+        model->loadTextures(gltfInput);
+
+        const tinygltf::Scene& scene{gltfInput.scenes[0]};
+        for(std::size_t i{0}; i < scene.nodes.size(); ++i)
+        {
+            const auto& node{ gltfInput.nodes[scene.nodes[i]] };
+            model->loadNode(node, gltfInput, nullptr, indexBuffer, vertexBuffer);
+        }
+    }
+    else
+    {
+        spdlog::error("Could not open gltf file at: {}", filepath.string());
+        return nullptr;
+    }
+
+    return model;
+}
+
+} // namespace gltf
 
 } // namespace vulc
 

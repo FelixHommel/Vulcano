@@ -35,8 +35,8 @@ public:
         return {.sampler = m_sampler, .imageView = m_view, .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     }
 
-    void fromFile(const Device* device, const std::filesystem::path& filepath);
-    void fromBuffer(const Device* device, std::span<const std::byte> buffer, VkFormat format, std::uint32_t texWidth, std::uint32_t texHeight);
+    void fromFile(Device* device, const std::filesystem::path& filepath);
+    void fromBuffer(Device* device, std::span<const std::byte> buffer, VkFormat format, std::uint32_t texWidth, std::uint32_t texHeight);
 
 private:
     struct KtxTextureDeleter
@@ -51,7 +51,7 @@ private:
 
     static constexpr auto MAX_ANISOTROPY{8.f};
 
-    const Device* m_device{nullptr};
+    Device const* m_device{nullptr};
 
     VmaAllocation m_allocation{VK_NULL_HANDLE};
     VkImage m_image{VK_NULL_HANDLE};

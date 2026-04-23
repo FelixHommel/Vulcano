@@ -1,6 +1,7 @@
 #include "core/CommandPool.hpp"
 #include "core/Device.hpp"
 #include "core/FrameResources.hpp"
+#include "core/GLTFModel.hpp"
 #include "core/ObjModel.hpp"
 #include "core/Pipeline.hpp"
 #include "core/Renderer.hpp"
@@ -10,11 +11,11 @@
 #include "core/Window.hpp"
 #include "utility/Globals.hpp"
 
+#include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include <SDL3/SDL.h>
+#include <spdlog/spdlog.h>
 
 #include <array>
 #include <cassert>
@@ -75,6 +76,7 @@ int main()
         pTexture->fromFile(device.get(), std::format("{}resources/textures/suzanne{}.ktx", PROJ_ROOT, i));
         textures.push_back(std::move(pTexture));
     }
+    auto gltfModel{std::unique_ptr<GLTFModel>(gltf::loadGLTF(*device, std::format("{}/resources/gltf/FlightHelmet/glTF/FlightHelmet.gltf", PROJ_ROOT)))};
 
     vulc::Renderer renderer{*device, *window, *swapchain, *pipeline, std::move(textures), *commandPool};
 
