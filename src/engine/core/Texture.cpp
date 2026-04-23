@@ -24,6 +24,11 @@
 namespace vulc
 {
 
+Texture::Texture(const Device* device, std::span<const std::byte> data, std::uint32_t width, std::uint32_t height, VkFormat format)
+    : m_device{device}    
+{
+}
+
 Texture::~Texture()
 {
     vkDestroyImageView(m_device->handle(), m_view, nullptr);
@@ -40,7 +45,8 @@ void Texture::fromFile(Device* device, const std::filesystem::path& filepath)
 
     // NOTE: Step 2 - load the ktx file from disk
     auto ktxLoadResult{ Texture::loadKTXFile(filepath) };
-    chk(ktxLoadResult.has_value(), std::format("KTX failed to load texture(from: '{}'): {}", filepath.string(), ktxLoadResult.error())); // FIXME: calling .error() on std::expected that contains an expected value is UB
+    // chk(ktxLoadResult.has_value(), std::format("KTX failed to load texture(from: '{}'): {}", filepath.string(), ktxLoadResult.error())); // FIXME: calling .error() on std::expected that contains an expected value is UB
+    chk(ktxLoadResult.has_value(), std::format("KTX failed to load texture(from: '{}'): {}", filepath.string(), "")); // FIXME: calling .error() on std::expected that contains an expected value is UB
     auto* texture{ ktxLoadResult->get() };
 
     auto ktxTextureFormat{ ktxTexture_GetVkFormat(texture) };
