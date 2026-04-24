@@ -22,28 +22,49 @@ Texture::Texture(const Device* device, Texture::Description description, const T
 {
     VULCANO_ASSERT(device != nullptr, "Device needs to be a valid pointer to a vulc::Device");
 
-    // NOTE: Step 3 - copy image data from CPU into staging buffer
-    VkBuffer imgStagingBuffer{ VK_NULL_HANDLE };
-    VmaAllocation imgStagingAllocation{ VK_NULL_HANDLE };
+    auto imgStagingBuffer{ createStagingBuffer(upload.data) };
+    std::memcpy(imgStagingBuffer.allocInfo.pMappedData, upload.data.data(), upload.data.size());
+
+    createTextureImage();
+    transitionImage(imgStagingBuffer, upload);
+
+    vmaDestroyBuffer(m_device->allocator(), imgStagingBuffer.buffer, imgStagingBuffer.allocation);
+
+    createTextureResources();
+}
+
+Texture::~Texture()
+{
+    vkDestroyImageView(m_device->handle(), m_view, nullptr);
+    vkDestroySampler(m_device->handle(), m_sampler, nullptr);
+    vmaDestroyImage(m_device->allocator(), m_image, m_allocation);
+}
+
+Texture::StagingBuffer Texture::createStagingBuffer(std::span<const std::byte> data)
+{
+    Texture::StagingBuffer staging{};
+
     const VkBufferCreateInfo imgStagingBufferCI{ .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-                                                 .size = static_cast<std::uint32_t>(upload.data.size()),
+                                                 .size = static_cast<std::uint32_t>(data.size()),
                                                  .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                  .sharingMode = VK_SHARING_MODE_EXCLUSIVE };
     const VmaAllocationCreateInfo imgStagingAllocCI{ .flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
                                                             | VMA_ALLOCATION_CREATE_MAPPED_BIT,
                                                      .usage = VMA_MEMORY_USAGE_AUTO };
-    VmaAllocationInfo imgStagingAllocInfo{};
     chk(vmaCreateBuffer(
         m_device->allocator(),
         &imgStagingBufferCI,
         &imgStagingAllocCI,
-        &imgStagingBuffer,
-        &imgStagingAllocation,
-        &imgStagingAllocInfo
+        &staging.buffer,
+        &staging.allocation,
+        &staging.allocInfo
     ));
 
-    std::memcpy(imgStagingAllocInfo.pMappedData, upload.data.data(), upload.data.size());
+    return staging;
+}
 
+void Texture::createTextureImage()
+{
     const VkImageCreateInfo texImgCI{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .imageType = VK_IMAGE_TYPE_2D,
@@ -59,8 +80,10 @@ Texture::Texture(const Device* device, Texture::Description description, const T
     };
     const VmaAllocationCreateInfo texImageAllocCI{ .usage = VMA_MEMORY_USAGE_AUTO };
     chk(vmaCreateImage(m_device->allocator(), &texImgCI, &texImageAllocCI, &m_image, &m_allocation, nullptr));
+}
 
-    // NOTE: Step 5 - record image transition command buffer
+void Texture::transitionImage(const StagingBuffer& stagingBuffer, const Texture::UploadInfo& uploadInfo)
+{
     VkCommandBuffer oneTimeCmdBuffer{ m_device->createCommandBuffer() };
 
     const VkImageMemoryBarrier2 barrierTexImage{
@@ -84,11 +107,11 @@ Texture::Texture(const Device* device, Texture::Description description, const T
 
     vkCmdCopyBufferToImage(
         oneTimeCmdBuffer,
-        imgStagingBuffer,
+        stagingBuffer.buffer,
         m_image,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        static_cast<std::uint32_t>(upload.copyRegions.size()),
-        upload.copyRegions.data()
+        static_cast<std::uint32_t>(uploadInfo.copyRegions.size()),
+        uploadInfo.copyRegions.data()
     );
 
     const VkImageMemoryBarrier2 barrierTexRead{
@@ -108,12 +131,11 @@ Texture::Texture(const Device* device, Texture::Description description, const T
     barrierTexInfo.pImageMemoryBarriers = &barrierTexRead;
     vkCmdPipelineBarrier2(oneTimeCmdBuffer, &barrierTexInfo);
 
-    // NOTE: Step 6 - finish command buffer recording and submit to queue
     m_device->submitCommandBuffer(oneTimeCmdBuffer);
+}
 
-    vmaDestroyBuffer(m_device->allocator(), imgStagingBuffer, imgStagingAllocation);
-
-    // NOTE: Step 7 - create texture utility
+void Texture::createTextureResources()
+{
     const VkSamplerCreateInfo samplerCI{ .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
                                          .magFilter = VK_FILTER_LINEAR,
                                          .minFilter = VK_FILTER_LINEAR,
@@ -127,20 +149,13 @@ Texture::Texture(const Device* device, Texture::Description description, const T
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .image = m_image,
         .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = texImgCI.format,
+        .format = m_description.format,
         .subresourceRange = { .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                              .baseMipLevel = 0,
                              .levelCount = m_description.mipLevels,
                              .layerCount = 1 }
     };
     chk(vkCreateImageView(m_device->handle(), &texViewCI, nullptr, &m_view));
-}
-
-Texture::~Texture()
-{
-    vkDestroyImageView(m_device->handle(), m_view, nullptr);
-    vkDestroySampler(m_device->handle(), m_sampler, nullptr);
-    vmaDestroyImage(m_device->allocator(), m_image, m_allocation);
 }
 
 } // namespace vulc

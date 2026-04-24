@@ -55,6 +55,14 @@ public:
     }
 
 private:
+    // TODO: Replace with a regular Buffer instance as soon as a Buffer class was added
+    struct StagingBuffer
+    {
+        VkBuffer buffer{ VK_NULL_HANDLE };
+        VmaAllocation allocation{ VK_NULL_HANDLE };
+        VmaAllocationInfo allocInfo{};
+    };
+
     static constexpr auto MAX_ANISOTROPY{ 8.f };
 
     const Device* m_device{ nullptr };
@@ -64,6 +72,11 @@ private:
     VkImage m_image{ VK_NULL_HANDLE };
     VkImageView m_view{ VK_NULL_HANDLE };
     VkSampler m_sampler{ VK_NULL_HANDLE };
+
+    StagingBuffer createStagingBuffer(std::span<const std::byte> data);
+    void createTextureImage();
+    void transitionImage(const StagingBuffer& stagingBuffer, const Texture::UploadInfo& uploadInfo);
+    void createTextureResources();
 };
 
 namespace texture
@@ -142,7 +155,6 @@ static inline std::unique_ptr<Texture> fromFile(Device* device, const std::files
 
     return std::make_unique<Texture>(device, std::move(desc), uploadInfo);
 }
-
 
 static inline std::unique_ptr<Texture> fromBuffer(
     Device* device, std::span<const std::byte> buffer, VkFormat format, std::uint32_t texWidth, std::uint32_t texHeight
