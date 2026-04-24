@@ -59,6 +59,12 @@ Renderer::~Renderer()
 
 void Renderer::draw(const ObjModel& mesh, const ShaderData& shaderData)
 {
+    if(m_recreateSwapchain)
+    {
+        recreateSwapchain();
+        return;
+    }
+
     syncSwapchainImages();
     if(m_recreateSwapchain)
     {
@@ -135,7 +141,6 @@ void Renderer::syncSwapchainImages()
     auto& frameResources{ m_frameResources.at(m_frameIndex) };
 
     chk(vkWaitForFences(m_device.handle(), 1, &frameResources->fence, VK_TRUE, UINT64_MAX));
-    chk(vkResetFences(m_device.handle(), 1, &frameResources->fence));
 
     chk(vkAcquireNextImageKHR(
             m_device.handle(),
@@ -270,7 +275,7 @@ void Renderer::submitToGraphicsQueue()
 {
     auto& frameResources{ m_frameResources.at(m_frameIndex) };
 
-    VkPipelineStageFlags waitStages{ VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT };
+    const VkPipelineStageFlags waitStages{ VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT };
     const VkSubmitInfo submitInfo{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                                    .waitSemaphoreCount = 1,
                                    .pWaitSemaphores = &frameResources->acquireSemaphore,
@@ -279,6 +284,8 @@ void Renderer::submitToGraphicsQueue()
                                    .pCommandBuffers = &frameResources->commandBuffer,
                                    .signalSemaphoreCount = 1,
                                    .pSignalSemaphores = &m_renderSemaphores.at(m_imageIndex) };
+
+    chk(vkResetFences(m_device.handle(), 1, &frameResources->fence));
     chk(vkQueueSubmit(m_device.graphicsQueue().queue, 1, &submitInfo, frameResources->fence));
 }
 
@@ -296,7 +303,6 @@ void Renderer::presentImage()
 
 void Renderer::recreateSwapchain()
 {
-    m_recreateSwapchain = false;
     vkDeviceWaitIdle(m_device.handle());
 
     m_swapchain.recreate(m_window);
@@ -305,6 +311,8 @@ void Renderer::recreateSwapchain()
         vkDestroySemaphore(m_device.handle(), s, nullptr);
 
     createRenderSemaphores();
+
+    m_recreateSwapchain = false;
 }
 
 } // namespace vulc
