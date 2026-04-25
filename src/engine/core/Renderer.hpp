@@ -9,15 +9,14 @@
 #include "core/Swapchain.hpp"
 #include "core/Texture.hpp"
 #include "core/Window.hpp"
-#include <cstdint>
-#include <vector>
 
 #include <glm/glm.hpp>
-
 #include <volk.h>
 #include <vulkan/vulkan_core.h>
 
+#include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace vulc
 {
