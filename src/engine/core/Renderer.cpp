@@ -56,7 +56,7 @@ Renderer::~Renderer()
     vkDestroyDescriptorPool(m_device.handle(), m_descriptorPool, nullptr);
 }
 
-void Renderer::draw(const ObjModel& mesh, const ShaderData& shaderData)
+void Renderer::draw(const ObjModel& model, const ShaderData& shaderData)
 {
     if(m_recreateSwapchain)
     {
@@ -72,7 +72,7 @@ void Renderer::draw(const ObjModel& mesh, const ShaderData& shaderData)
     }
 
     updateShaderdataBuffers(shaderData);
-    recordCommandBuffers(mesh);
+    recordCommandBuffers(model);
     submitToGraphicsQueue();
 
     m_frameIndex = (m_frameIndex + 1) % globals::MAX_FRMES_IN_FLIGHT;
